@@ -1,22 +1,11 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { getAllPosts, getAllTags } from '../utils/posts';
+import { getAllTags } from '../utils/posts';
 
-const allPosts = await getAllPosts();
 const allTags = await getAllTags();
-
-// 获取搜索查询参数
-const query = Astro.url.searchParams.get('q') || '';
-
-// 搜索文章标题（已经按时间倒序排列）
-const searchResults = query 
-  ? allPosts.filter(post => 
-      post.title.toLowerCase().includes(query.toLowerCase())
-    )
-  : [];
 ---
 
-<Layout title={query ? `搜索: ${query}` : '搜索'} description={`搜索结果: ${query}`}>
+<Layout title="搜索" description="搜索文章">
   <!-- 双栏布局 -->
   <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
     <!-- 主内容区 (占3份) -->
@@ -30,69 +19,31 @@ const searchResults = query
 
       <!-- 搜索标题 -->
       <h1 class="text-3xl font-bold mb-6 border-b-2 border-black pb-4">
-        {query ? (
-          <>
-            搜索: "{query}"
-            <span class="text-base text-gray-500 ml-3 font-normal">({searchResults.length} 篇文章)</span>
-          </>
-        ) : (
-          '搜索文章'
-        )}
+        <span id="search-title">搜索文章</span>
+        <span id="result-count" class="text-base text-gray-500 ml-3 font-normal hidden"></span>
       </h1>
 
-      {query ? (
-        searchResults.length > 0 ? (
-          <div class="mb-8">
-            <!-- 文章列表 -->
-            <ul class="space-y-0 text-base border-t border-gray-300">
-              {searchResults.map(post => (
-                <li class="group py-3 border-b border-gray-300 hover:bg-gray-50 transition-colors">
-                  <div class="flex flex-col sm:flex-row sm:items-baseline gap-2">
-                    <a 
-                      href={`/posts/${post.slug}`} 
-                      class="text-blue-600 hover:text-red-600 hover:underline visited:text-purple-800 font-medium text-lg flex-grow"
-                    >
-                      {post.title}
-                    </a>
-                    <div class="flex items-center gap-3 flex-shrink-0">
-                      {post.tags.length > 0 && (
-                        <div class="flex gap-2">
-                          {post.tags.slice(0, 3).map(tag => (
-                            <a 
-                              href={`/tags/${tag}`} 
-                              class="text-xs text-gray-600 hover:text-gray-900 bg-gray-100 px-2 py-0.5 border border-gray-300 hover:bg-gray-200 transition-colors"
-                            >
-                              #{tag}
-                            </a>
-                          ))}
-                        </div>
-                      )}
-                      {post.date && (
-                        <span class="text-xs text-gray-500 font-mono">
-                          {new Date(post.date).toLocaleDateString('zh-CN')}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  {post.description && (
-                    <p class="text-sm text-gray-600 mt-1.5 line-clamp-2">{post.description}</p>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-        ) : (
-          <div class="text-center py-16 bg-gray-50 border border-gray-200">
-            <p class="text-gray-600 text-lg mb-2">😔 未找到匹配的文章</p>
-            <p class="text-gray-500 text-sm">尝试使用不同的关键词</p>
-          </div>
-        )
-      ) : (
-        <div class="text-center py-16 bg-gray-50 border border-gray-200">
-          <p class="text-gray-600 text-lg mb-2">🔍 输入关键词开始搜索</p>
-          <p class="text-gray-500 text-sm">搜索范围：文章标题</p>
-        </div>
-      )}
+      <!-- 加载状态 -->
+      <div id="loading" class="hidden text-center py-16 bg-gray-50 border border-gray-200">
+        <p class="text-gray-600 text-lg">🔍 搜索中...</p>
+      </div>
+
+      <!-- 搜索结果容器 -->
+      <div id="search-results" class="mb-8">
+        <!-- 结果将通过 JavaScript 动态插入 -->
+      </div>
+
+      <!-- 空状态 -->
+      <div id="empty-state" class="text-center py-16 bg-gray-50 border border-gray-200">
+        <p class="text-gray-600 text-lg mb-2">🔍 输入关键词开始搜索</p>
+        <p class="text-gray-500 text-sm">搜索范围：文章标题</p>
+      </div>
+
+      <!-- 无结果状态 -->
+      <div id="no-results" class="hidden text-center py-16 bg-gray-50 border border-gray-200">
+        <p class="text-gray-600 text-lg mb-2">😔 未找到匹配的文章</p>
+        <p class="text-gray-500 text-sm">尝试使用不同的关键词</p>
+      </div>
     </main>
 
     <!-- 侧边栏 (占1份) -->
@@ -116,3 +67,162 @@ const searchResults = query
     </aside>
   </div>
 </Layout>
+
+<script>
+  interface Post {
+    slug: string;
+    title: string;
+    description: string;
+    tags: string[];
+    date: string;
+  }
+
+  let allPosts: Post[] = [];
+
+  // 获取 URL 参数
+  function getQueryParam(param: string): string {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(param) || '';
+  }
+
+  // 格式化日期
+  function formatDate(dateString: string): string {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('zh-CN');
+  }
+
+  // 渲染搜索结果
+  function renderResults(posts: Post[], query: string) {
+    const searchTitle = document.getElementById('search-title');
+    const resultCount = document.getElementById('result-count');
+    const searchResults = document.getElementById('search-results');
+    const emptyState = document.getElementById('empty-state');
+    const noResults = document.getElementById('no-results');
+    const loading = document.getElementById('loading');
+
+    if (!searchTitle || !resultCount || !searchResults || !emptyState || !noResults || !loading) return;
+
+    // 隐藏加载状态
+    loading.classList.add('hidden');
+
+    if (!query) {
+      // 显示空状态
+      emptyState.classList.remove('hidden');
+      noResults.classList.add('hidden');
+      searchResults.innerHTML = '';
+      searchTitle.textContent = '搜索文章';
+      resultCount.classList.add('hidden');
+      return;
+    }
+
+    // 更新标题
+    searchTitle.textContent = `搜索: "${query}"`;
+    resultCount.textContent = `(${posts.length} 篇文章)`;
+    resultCount.classList.remove('hidden');
+
+    if (posts.length === 0) {
+      // 显示无结果状态
+      emptyState.classList.add('hidden');
+      noResults.classList.remove('hidden');
+      searchResults.innerHTML = '';
+      return;
+    }
+
+    // 隐藏空状态
+    emptyState.classList.add('hidden');
+    noResults.classList.add('hidden');
+
+    // 渲染结果列表
+    const html = `
+      <ul class="space-y-0 text-base border-t border-gray-300">
+        ${posts.map(post => `
+          <li class="group py-3 border-b border-gray-300 hover:bg-gray-50 transition-colors">
+            <div class="flex flex-col sm:flex-row sm:items-baseline gap-2">
+              <a 
+                href="/posts/${post.slug}" 
+                class="text-blue-600 hover:text-red-600 hover:underline visited:text-purple-800 font-medium text-lg flex-grow"
+              >
+                ${post.title}
+              </a>
+              <div class="flex items-center gap-3 flex-shrink-0">
+                ${post.tags.length > 0 ? `
+                  <div class="flex gap-2">
+                    ${post.tags.slice(0, 3).map(tag => `
+                      <a 
+                        href="/tags/${tag}" 
+                        class="text-xs text-gray-600 hover:text-gray-900 bg-gray-100 px-2 py-0.5 border border-gray-300 hover:bg-gray-200 transition-colors"
+                      >
+                        #${tag}
+                      </a>
+                    `).join('')}
+                  </div>
+                ` : ''}
+                ${post.date ? `
+                  <span class="text-xs text-gray-500 font-mono">
+                    ${formatDate(post.date)}
+                  </span>
+                ` : ''}
+              </div>
+            </div>
+            ${post.description ? `
+              <p class="text-sm text-gray-600 mt-1.5 line-clamp-2">${post.description}</p>
+            ` : ''}
+          </li>
+        `).join('')}
+      </ul>
+    `;
+
+    searchResults.innerHTML = html;
+  }
+
+  // 执行搜索
+  function performSearch(query: string) {
+    if (!query) {
+      renderResults([], '');
+      return;
+    }
+
+    const results = allPosts.filter(post => 
+      post.title.toLowerCase().includes(query.toLowerCase())
+    );
+
+    renderResults(results, query);
+  }
+
+  // 加载文章数据并执行搜索
+  async function loadAndSearch() {
+    const loading = document.getElementById('loading');
+    const emptyState = document.getElementById('empty-state');
+    
+    if (!loading || !emptyState) return;
+
+    try {
+      const query = getQueryParam('q');
+      
+      if (query) {
+        // 显示加载状态
+        loading.classList.remove('hidden');
+        emptyState.classList.add('hidden');
+      }
+
+      // 加载文章数据
+      const response = await fetch('/api/posts.json');
+      allPosts = await response.json();
+
+      // 执行搜索
+      performSearch(query);
+    } catch (error) {
+      console.error('Failed to load posts:', error);
+      const loading = document.getElementById('loading');
+      if (loading) {
+        loading.innerHTML = '<p class="text-red-600">加载失败，请刷新页面重试</p>';
+      }
+    }
+  }
+
+  // 页面加载完成后执行
+  document.addEventListener('DOMContentLoaded', () => {
+    loadAndSearch();
+  });
+</script>
