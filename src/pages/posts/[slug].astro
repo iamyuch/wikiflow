@@ -1,0 +1,25 @@
+---
+import ArticleLayout from '../../layouts/ArticleLayout.astro';
+import { getAllPosts, getPostBySlug } from '../../utils/posts';
+import { marked } from 'marked';
+
+export async function getStaticPaths() {
+  const posts = await getAllPosts();
+  return posts.map(post => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const htmlContent = marked(post.content);
+---
+
+<ArticleLayout 
+  title={post.title}
+  description={post.description}
+  keywords={post.keywords}
+  tags={post.tags}
+>
+  <div set:html={htmlContent} />
+</ArticleLayout>

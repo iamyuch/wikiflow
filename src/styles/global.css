@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+/* 经典 Web2 风格样式 */
+body {
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* 搜索框聚焦时的样式 */
+input:focus {
+  outline: 2px solid black;
+}
+
+/* 自定义 Tailwind 颜色 */
+@theme {
+  --color-link: #0000EE;
+  --color-link-visited: #551A8B;
+  --color-link-hover: #FF0000;
+  --color-border: #CCCCCC;
+  --color-page: #F5F5F5;
+}

@@ -1,0 +1,102 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getAllPosts, getAllTags, paginatePosts } from '../utils/posts';
+
+const allPosts = await getAllPosts();
+const allTags = await getAllTags();
+
+// 获取页码参数
+const page = Number(Astro.url.searchParams.get('page')) || 1;
+const { posts, currentPage, totalPages, hasNext, hasPrev } = paginatePosts(allPosts, page, 30);
+
+// 生成分页数字
+const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1).filter(p => {
+  if (p === 1 || p === totalPages) return true;
+  if (p >= currentPage - 2 && p <= currentPage + 2) return true;
+  return false;
+});
+---
+
+<Layout title="WikiFlow">
+  <!-- 双栏布局 -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+    <!-- 主内容区 (占3份) -->
+    <main class="md:col-span-3">
+      <!-- 列表区块 -->
+      <div class="mb-8">
+        <!-- 列表容器 -->
+        <ul class="space-y-0 text-base" id="article-list">
+          {posts.map(post => (
+            <li class="group py-2 border-b border-dotted border-gray-300 flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-4 hover:bg-gray-50 transition-colors">
+              <span class="font-mono text-gray-500 text-xs w-24 flex-shrink-0">
+                [{post.date ? new Date(post.date).toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' }) : ''}]
+              </span>
+              <div class="flex-grow">
+                <a href={`/posts/${post.slug}`} class="text-[#0000EE] hover:text-[#FF0000] font-medium visited:text-[#551A8B] text-lg">
+                  {post.title}
+                </a>
+              </div>
+              {post.tags.length > 0 && (
+                <a href={`/tags/${post.tags[0]}`} class="text-xs text-gray-500 hover:text-gray-800 bg-gray-100 px-1 border border-gray-200 rounded-none whitespace-nowrap">
+                  #{post.tags[0]}
+                </a>
+              )}
+            </li>
+          ))}
+        </ul>
+        
+        <!-- 简单的分页 -->
+        {totalPages > 1 && (
+          <div class="mt-8 pt-4 border-t border-gray-300 flex gap-2 text-sm font-sans flex-wrap">
+            <span class="font-bold">分页:</span>
+            
+            {hasPrev && (
+              <a href={`/?page=${currentPage - 1}`} class="text-[#0000EE] hover:underline hover:bg-gray-100 border border-transparent px-2">
+                &laquo; Prev
+              </a>
+            )}
+            
+            {pageNumbers.map((p, index) => {
+              const showEllipsisBefore = index > 0 && p - pageNumbers[index - 1] > 1;
+              return (
+                <>
+                  {showEllipsisBefore && <span>...</span>}
+                  {p === currentPage ? (
+                    <span class="font-bold text-black border border-black px-2">{p}</span>
+                  ) : (
+                    <a href={`/?page=${p}`} class="text-[#0000EE] hover:underline hover:bg-gray-100 border border-transparent px-2">
+                      {p}
+                    </a>
+                  )}
+                </>
+              );
+            })}
+            
+            {hasNext && (
+              <a href={`/?page=${currentPage + 1}`} class="text-[#0000EE] hover:underline hover:bg-gray-100 border border-transparent px-2">
+                Next &raquo;
+              </a>
+            )}
+          </div>
+        )}
+      </div>
+    </main>
+
+    <!-- 侧边栏 (占1份) -->
+    <aside class="md:col-span-1 border-l-0 md:border-l border-gray-200 md:pl-6 space-y-8">
+      <!-- 标签云 -->
+      <div>
+        <h3 class="font-bold border-b-2 border-black mb-3 pb-1 text-sm uppercase tracking-wide">
+          标签
+        </h3>
+        <div class="flex flex-wrap gap-x-3 gap-y-1 text-sm leading-relaxed text-gray-700">
+          {allTags.map(tag => (
+            <a href={`/tags/${tag}`} class="text-[#0000EE] hover:text-[#FF0000] hover:underline">
+              [#{tag}]
+            </a>
+          ))}
+        </div>
+      </div>
+    </aside>
+  </div>
+</Layout>
