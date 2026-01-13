@@ -265,7 +265,7 @@ const { title, description, keywords, tags = [] } = Astro.props;
     font-weight: 600;
   }
 
-  /* 目录层级缩进 */
+  /* 目录层级缩进 - 相对于上一级缩进 */
   #toc-list .toc-h2 {
     padding-left: 0;
     font-weight: 600;
@@ -277,11 +277,11 @@ const { title, description, keywords, tags = [] } = Astro.props;
   }
 
   #toc-list .toc-h3 {
-    padding-left: 1.2em;
+    padding-left: 1em;
   }
 
   #toc-list .toc-h4 {
-    padding-left: 2.4em;
+    padding-left: 2em;
     font-size: 0.95em;
   }
 
