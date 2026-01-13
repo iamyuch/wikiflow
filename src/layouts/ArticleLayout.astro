@@ -41,20 +41,32 @@ const { title, description, keywords, tags = [] } = Astro.props;
       )}
 
       <!-- 文章内容 -->
-      <article class="prose prose-lg max-w-none">
+      <article class="prose prose-lg max-w-none" id="article-content">
         <slot />
       </article>
     </main>
 
     <!-- 侧边栏 (占1份，更窄) -->
     <aside class="lg:col-span-1 border-l-0 lg:border-l border-gray-200 lg:pl-6 space-y-8">
-      <!-- 标签云 -->
-      <div class="lg:sticky lg:top-4">
-        <h3 class="font-bold border-b-2 border-black mb-4 pb-2 text-sm uppercase tracking-wider">
-          标签
-        </h3>
-        <div id="tags-list" class="flex flex-wrap gap-x-2 gap-y-2 text-sm leading-relaxed text-gray-700">
-          <!-- 标签将通过 JavaScript 动态加载 -->
+      <div class="lg:sticky lg:top-4 space-y-8">
+        <!-- 文档目录 -->
+        <div id="toc-container" class="hidden">
+          <h3 class="font-bold border-b-2 border-black mb-4 pb-2 text-sm uppercase tracking-wider">
+            目录
+          </h3>
+          <nav id="toc-list" class="text-sm space-y-1">
+            <!-- 目录将通过 JavaScript 动态生成 -->
+          </nav>
+        </div>
+
+        <!-- 标签云 -->
+        <div>
+          <h3 class="font-bold border-b-2 border-black mb-4 pb-2 text-sm uppercase tracking-wider">
+            标签
+          </h3>
+          <div id="tags-list" class="flex flex-wrap gap-x-2 gap-y-2 text-sm leading-relaxed text-gray-700">
+            <!-- 标签将通过 JavaScript 动态加载 -->
+          </div>
         </div>
       </div>
     </aside>
@@ -65,8 +77,8 @@ const { title, description, keywords, tags = [] } = Astro.props;
   /* 文章内容的样式优化 */
   :global(.prose) {
     color: #000;
-    font-size: 18px;
-    line-height: 1.8;
+    font-size: 16px;
+    line-height: 1.75;
   }
 
   :global(.prose a) {
@@ -85,49 +97,76 @@ const { title, description, keywords, tags = [] } = Astro.props;
     color: #551A8B;
   }
 
-  :global(.prose h2) {
-    font-size: 1.75em;
-    font-weight: bold;
+  /* 标题层级优化 - 所有标题都加粗，字体大小递减 */
+  :global(.prose h1) {
+    font-size: 2em;
+    font-weight: 700;
     margin-top: 1.5em;
     margin-bottom: 0.75em;
+    line-height: 1.2;
+    border-bottom: 2px solid #000;
+    padding-bottom: 0.5em;
+  }
+
+  :global(.prose h2) {
+    font-size: 1.65em;
+    font-weight: 700;
+    margin-top: 1.5em;
+    margin-bottom: 0.75em;
+    line-height: 1.3;
     border-bottom: 1px solid #ccc;
     padding-bottom: 0.5em;
-    line-height: 1.3;
   }
 
   :global(.prose h3) {
-    font-size: 1.4em;
-    font-weight: bold;
+    font-size: 1.35em;
+    font-weight: 700;
     margin-top: 1.25em;
-    margin-bottom: 0.5em;
+    margin-bottom: 0.6em;
     line-height: 1.3;
   }
 
-  :global(.prose h4),
-  :global(.prose h5),
-  :global(.prose h6) {
+  :global(.prose h4) {
     font-size: 1.15em;
-    font-weight: bold;
-    margin-top: 1em;
+    font-weight: 700;
+    margin-top: 1.1em;
     margin-bottom: 0.5em;
+    line-height: 1.4;
   }
 
+  :global(.prose h5) {
+    font-size: 1.05em;
+    font-weight: 700;
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+    line-height: 1.4;
+  }
+
+  :global(.prose h6) {
+    font-size: 1em;
+    font-weight: 700;
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+    line-height: 1.4;
+  }
+
+  /* 段落间距优化 */
   :global(.prose p) {
-    margin-bottom: 1.25em;
-    font-size: 18px;
-    line-height: 1.8;
+    margin-bottom: 1.4em;
+    font-size: 16px;
+    line-height: 1.75;
   }
 
   :global(.prose ul),
   :global(.prose ol) {
     margin-left: 2em;
-    margin-bottom: 1.25em;
+    margin-bottom: 1.4em;
   }
 
   :global(.prose li) {
     margin-bottom: 0.5em;
-    font-size: 18px;
-    line-height: 1.8;
+    font-size: 16px;
+    line-height: 1.75;
   }
 
   /* 修复代码溢出问题 */
@@ -147,7 +186,7 @@ const { title, description, keywords, tags = [] } = Astro.props;
     border: 1px solid #ccc;
     padding: 1.25em;
     overflow-x: auto;
-    margin-bottom: 1.25em;
+    margin-bottom: 1.4em;
     border-radius: 4px;
     max-width: 100%;
   }
@@ -165,7 +204,7 @@ const { title, description, keywords, tags = [] } = Astro.props;
     border-left: 4px solid #ccc;
     padding-left: 1.25em;
     margin-left: 0;
-    margin-bottom: 1.25em;
+    margin-bottom: 1.4em;
     color: #666;
     font-style: italic;
   }
@@ -173,8 +212,8 @@ const { title, description, keywords, tags = [] } = Astro.props;
   :global(.prose table) {
     border-collapse: collapse;
     width: 100%;
-    margin-bottom: 1.25em;
-    font-size: 17px;
+    margin-bottom: 1.4em;
+    font-size: 16px;
     overflow-x: auto;
     display: block;
   }
@@ -198,10 +237,47 @@ const { title, description, keywords, tags = [] } = Astro.props;
     border: 1px solid #ccc;
   }
 
+  /* 目录样式 */
+  #toc-list a {
+    display: block;
+    color: #666;
+    text-decoration: none;
+    padding: 0.25rem 0;
+    transition: color 0.2s ease;
+  }
+
+  #toc-list a:hover {
+    color: #0000EE;
+    text-decoration: underline;
+  }
+
+  #toc-list a.active {
+    color: #0000EE;
+    font-weight: 600;
+  }
+
+  #toc-list .toc-h2 {
+    padding-left: 0;
+  }
+
+  #toc-list .toc-h3 {
+    padding-left: 1em;
+    font-size: 0.95em;
+  }
+
+  #toc-list .toc-h4 {
+    padding-left: 2em;
+    font-size: 0.9em;
+  }
+
   /* 移动端响应式 */
   @media (max-width: 768px) {
     :global(.prose) {
-      font-size: 16px;
+      font-size: 15px;
+    }
+
+    :global(.prose h1) {
+      font-size: 1.75em;
     }
 
     :global(.prose h2) {
@@ -212,12 +288,21 @@ const { title, description, keywords, tags = [] } = Astro.props;
       font-size: 1.25em;
     }
 
+    :global(.prose h4) {
+      font-size: 1.1em;
+    }
+
+    :global(.prose h5),
+    :global(.prose h6) {
+      font-size: 1em;
+    }
+
     :global(.prose p) {
-      font-size: 16px;
+      font-size: 15px;
     }
 
     :global(.prose li) {
-      font-size: 16px;
+      font-size: 15px;
     }
 
     :global(.prose pre) {
@@ -228,6 +313,60 @@ const { title, description, keywords, tags = [] } = Astro.props;
 </style>
 
 <script>
+  // 生成文档目录
+  function generateTOC() {
+    const article = document.getElementById('article-content');
+    const tocContainer = document.getElementById('toc-container');
+    const tocList = document.getElementById('toc-list');
+    
+    if (!article || !tocContainer || !tocList) return;
+
+    const headings = article.querySelectorAll('h2, h3, h4');
+    
+    if (headings.length === 0) {
+      tocContainer.classList.add('hidden');
+      return;
+    }
+
+    tocContainer.classList.remove('hidden');
+    
+    let tocHTML = '';
+    headings.forEach((heading, index) => {
+      const id = `heading-${index}`;
+      heading.id = id;
+      
+      const level = heading.tagName.toLowerCase();
+      const text = heading.textContent || '';
+      
+      tocHTML += `<a href="#${id}" class="toc-${level} hover:text-blue-600">${text}</a>`;
+    });
+    
+    tocList.innerHTML = tocHTML;
+
+    // 滚动高亮当前标题
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const id = entry.target.id;
+            document.querySelectorAll('#toc-list a').forEach((link) => {
+              link.classList.remove('active');
+            });
+            const activeLink = document.querySelector(`#toc-list a[href="#${id}"]`);
+            if (activeLink) {
+              activeLink.classList.add('active');
+            }
+          }
+        });
+      },
+      { rootMargin: '-100px 0px -66%' }
+    );
+
+    headings.forEach((heading) => {
+      observer.observe(heading);
+    });
+  }
+
   // 加载所有标签
   async function loadTags() {
     try {
@@ -244,5 +383,9 @@ const { title, description, keywords, tags = [] } = Astro.props;
     }
   }
 
-  loadTags();
+  // 页面加载完成后执行
+  document.addEventListener('DOMContentLoaded', () => {
+    generateTOC();
+    loadTags();
+  });
 </script>

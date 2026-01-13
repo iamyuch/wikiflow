@@ -33,14 +33,15 @@ input:focus {
 /* 文章内容排版优化 */
 .prose {
   max-width: 100%;
-  font-size: 18px;
-  line-height: 1.8;
+  font-size: 16px;
+  line-height: 1.75;
   color: #000;
 }
 
+/* 标题层级优化 - 所有标题都加粗，字体大小递减 */
 .prose h1 {
-  font-size: 2.25em;
-  font-weight: bold;
+  font-size: 2em;
+  font-weight: 700;
   margin-top: 1.5em;
   margin-bottom: 0.75em;
   line-height: 1.2;
@@ -49,8 +50,8 @@ input:focus {
 }
 
 .prose h2 {
-  font-size: 1.75em;
-  font-weight: bold;
+  font-size: 1.65em;
+  font-weight: 700;
   margin-top: 1.5em;
   margin-bottom: 0.75em;
   line-height: 1.3;
@@ -59,26 +60,42 @@ input:focus {
 }
 
 .prose h3 {
-  font-size: 1.4em;
-  font-weight: bold;
+  font-size: 1.35em;
+  font-weight: 700;
   margin-top: 1.25em;
-  margin-bottom: 0.5em;
+  margin-bottom: 0.6em;
   line-height: 1.3;
 }
 
-.prose h4,
-.prose h5,
-.prose h6 {
+.prose h4 {
   font-size: 1.15em;
-  font-weight: bold;
-  margin-top: 1em;
+  font-weight: 700;
+  margin-top: 1.1em;
   margin-bottom: 0.5em;
+  line-height: 1.4;
 }
 
+.prose h5 {
+  font-size: 1.05em;
+  font-weight: 700;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  line-height: 1.4;
+}
+
+.prose h6 {
+  font-size: 1em;
+  font-weight: 700;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  line-height: 1.4;
+}
+
+/* 段落间距优化 */
 .prose p {
-  margin-bottom: 1.25em;
-  font-size: 18px;
-  line-height: 1.8;
+  margin-bottom: 1.4em;
+  font-size: 16px;
+  line-height: 1.75;
 }
 
 .prose a {
@@ -99,13 +116,13 @@ input:focus {
 .prose ul,
 .prose ol {
   margin-left: 2em;
-  margin-bottom: 1.25em;
+  margin-bottom: 1.4em;
 }
 
 .prose li {
   margin-bottom: 0.5em;
-  font-size: 18px;
-  line-height: 1.8;
+  font-size: 16px;
+  line-height: 1.75;
 }
 
 /* 修复代码溢出问题 */
@@ -125,7 +142,7 @@ input:focus {
   border: 1px solid #ccc;
   padding: 1.25em;
   overflow-x: auto;
-  margin-bottom: 1.25em;
+  margin-bottom: 1.4em;
   border-radius: 4px;
   max-width: 100%;
 }
@@ -143,7 +160,7 @@ input:focus {
   border-left: 4px solid #ccc;
   padding-left: 1.25em;
   margin-left: 0;
-  margin-bottom: 1.25em;
+  margin-bottom: 1.4em;
   color: #666;
   font-style: italic;
 }
@@ -151,8 +168,8 @@ input:focus {
 .prose table {
   border-collapse: collapse;
   width: 100%;
-  margin-bottom: 1.25em;
-  font-size: 17px;
+  margin-bottom: 1.4em;
+  font-size: 16px;
   overflow-x: auto;
   display: block;
 }
@@ -183,7 +200,7 @@ input:focus {
   }
 
   .prose {
-    font-size: 16px;
+    font-size: 15px;
   }
 
   .prose h1 {
@@ -198,12 +215,21 @@ input:focus {
     font-size: 1.25em;
   }
 
+  .prose h4 {
+    font-size: 1.1em;
+  }
+
+  .prose h5,
+  .prose h6 {
+    font-size: 1em;
+  }
+
   .prose p {
-    font-size: 16px;
+    font-size: 15px;
   }
 
   .prose li {
-    font-size: 16px;
+    font-size: 15px;
   }
 
   .prose pre {
