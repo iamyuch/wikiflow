@@ -116,6 +116,7 @@ input:focus {
 .prose ul,
 .prose ol {
   margin-left: 0;
+  margin-top: 0.175em;
   margin-bottom: 1.4em;
   padding-left: 1.5em;
 }
@@ -129,7 +130,7 @@ input:focus {
 }
 
 .prose li {
-  margin-bottom: 0.35em;
+  margin-bottom: 0.175em;
   margin-left: 0;
   padding-left: 0.25em;
   font-size: 16px;
@@ -143,7 +144,7 @@ input:focus {
 
 .prose ul ul {
   list-style-type: circle;
-  margin-top: 0.35em;
+  margin-top: 0.175em;
   margin-bottom: 0;
 }
 
