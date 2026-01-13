@@ -8,7 +8,7 @@ const allTags = await getAllTags();
 // 获取搜索查询参数
 const query = Astro.url.searchParams.get('q') || '';
 
-// 搜索文章标题
+// 搜索文章标题（已经按时间倒序排列）
 const searchResults = query 
   ? allPosts.filter(post => 
       post.title.toLowerCase().includes(query.toLowerCase())
@@ -16,54 +16,81 @@ const searchResults = query
   : [];
 ---
 
-<Layout title={`搜索: ${query}`} description={`搜索结果: ${query}`}>
+<Layout title={query ? `搜索: ${query}` : '搜索'} description={`搜索结果: ${query}`}>
   <!-- 双栏布局 -->
   <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
     <!-- 主内容区 (占3份) -->
     <main class="md:col-span-3">
       <!-- 面包屑导航 -->
-      <nav class="text-sm mb-4 text-gray-600">
-        <a href="/" class="hover:text-black">首页</a>
+      <nav class="text-sm mb-6 text-gray-600 border-b border-gray-200 pb-4">
+        <a href="/" class="text-blue-600 hover:text-red-600 hover:underline">首页</a>
         <span class="mx-2">/</span>
-        <span class="text-black">搜索</span>
+        <span class="text-black font-medium">搜索</span>
       </nav>
 
       <!-- 搜索标题 -->
-      <h1 class="text-2xl font-bold mb-4 border-b-2 border-black pb-2">
-        搜索: "{query}"
-        <span class="text-sm text-gray-500 ml-2">({searchResults.length} 篇文章)</span>
+      <h1 class="text-3xl font-bold mb-6 border-b-2 border-black pb-4">
+        {query ? (
+          <>
+            搜索: "{query}"
+            <span class="text-base text-gray-500 ml-3 font-normal">({searchResults.length} 篇文章)</span>
+          </>
+        ) : (
+          '搜索文章'
+        )}
       </h1>
 
-      {searchResults.length > 0 ? (
-        <div class="mb-8">
-          <!-- 列表容器 -->
-          <ul class="space-y-0 text-base">
-            {searchResults.map(post => (
-              <li class="group py-2 border-b border-dotted border-gray-300 flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-4 hover:bg-gray-50 transition-colors">
-                <span class="font-mono text-gray-500 text-xs w-24 flex-shrink-0">
-                  [{post.date ? new Date(post.date).toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' }) : ''}]
-                </span>
-                <div class="flex-grow">
-                  <a href={`/posts/${post.slug}`} class="text-[#0000EE] hover:text-[#FF0000] font-medium visited:text-[#551A8B] text-lg">
-                    {post.title}
-                  </a>
+      {query ? (
+        searchResults.length > 0 ? (
+          <div class="mb-8">
+            <!-- 文章列表 -->
+            <ul class="space-y-0 text-base border-t border-gray-300">
+              {searchResults.map(post => (
+                <li class="group py-3 border-b border-gray-300 hover:bg-gray-50 transition-colors">
+                  <div class="flex flex-col sm:flex-row sm:items-baseline gap-2">
+                    <a 
+                      href={`/posts/${post.slug}`} 
+                      class="text-blue-600 hover:text-red-600 hover:underline visited:text-purple-800 font-medium text-lg flex-grow"
+                    >
+                      {post.title}
+                    </a>
+                    <div class="flex items-center gap-3 flex-shrink-0">
+                      {post.tags.length > 0 && (
+                        <div class="flex gap-2">
+                          {post.tags.slice(0, 3).map(tag => (
+                            <a 
+                              href={`/tags/${tag}`} 
+                              class="text-xs text-gray-600 hover:text-gray-900 bg-gray-100 px-2 py-0.5 border border-gray-300 hover:bg-gray-200 transition-colors"
+                            >
+                              #{tag}
+                            </a>
+                          ))}
+                        </div>
+                      )}
+                      {post.date && (
+                        <span class="text-xs text-gray-500 font-mono">
+                          {new Date(post.date).toLocaleDateString('zh-CN')}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                   {post.description && (
-                    <p class="text-sm text-gray-600 mt-1">{post.description}</p>
+                    <p class="text-sm text-gray-600 mt-1.5 line-clamp-2">{post.description}</p>
                   )}
-                </div>
-                {post.tags.length > 0 && (
-                  <a href={`/tags/${post.tags[0]}`} class="text-xs text-gray-500 hover:text-gray-800 bg-gray-100 px-1 border border-gray-200 rounded-none whitespace-nowrap">
-                    #{post.tags[0]}
-                  </a>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <div class="text-center py-16 bg-gray-50 border border-gray-200">
+            <p class="text-gray-600 text-lg mb-2">😔 未找到匹配的文章</p>
+            <p class="text-gray-500 text-sm">尝试使用不同的关键词</p>
+          </div>
+        )
       ) : (
-        <div class="text-center py-12">
-          <p class="text-gray-500 text-lg">未找到匹配的文章</p>
-          <p class="text-gray-400 text-sm mt-2">尝试使用不同的关键词</p>
+        <div class="text-center py-16 bg-gray-50 border border-gray-200">
+          <p class="text-gray-600 text-lg mb-2">🔍 输入关键词开始搜索</p>
+          <p class="text-gray-500 text-sm">搜索范围：文章标题</p>
         </div>
       )}
     </main>
@@ -72,12 +99,15 @@ const searchResults = query
     <aside class="md:col-span-1 border-l-0 md:border-l border-gray-200 md:pl-6 space-y-8">
       <!-- 标签云 -->
       <div>
-        <h3 class="font-bold border-b-2 border-black mb-3 pb-1 text-sm uppercase tracking-wide">
+        <h3 class="font-bold border-b-2 border-black mb-4 pb-2 text-sm uppercase tracking-wider">
           标签
         </h3>
-        <div class="flex flex-wrap gap-x-3 gap-y-1 text-sm leading-relaxed text-gray-700">
+        <div class="flex flex-wrap gap-x-2 gap-y-2 text-sm leading-relaxed text-gray-700">
           {allTags.map(tag => (
-            <a href={`/tags/${tag}`} class="text-[#0000EE] hover:text-[#FF0000] hover:underline">
+            <a 
+              href={`/tags/${tag}`} 
+              class="text-blue-600 hover:text-red-600 hover:underline"
+            >
               [#{tag}]
             </a>
           ))}
