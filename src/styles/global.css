@@ -115,9 +115,9 @@ input:focus {
 
 .prose ul,
 .prose ol {
-  margin-left: 2em;
+  margin-left: 0;
   margin-bottom: 1.4em;
-  padding-left: 0;
+  padding-left: 1.5em;
 }
 
 .prose ul {
@@ -129,16 +129,22 @@ input:focus {
 }
 
 .prose li {
-  margin-bottom: 0.5em;
-  margin-left: 1.5em;
+  margin-bottom: 0.35em;
+  margin-left: 0;
+  padding-left: 0.25em;
   font-size: 16px;
   line-height: 1.75;
   display: list-item;
 }
 
+.prose li:last-child {
+  margin-bottom: 0;
+}
+
 .prose ul ul {
   list-style-type: circle;
-  margin-top: 0.5em;
+  margin-top: 0.35em;
+  margin-bottom: 0;
 }
 
 .prose ul ul ul {
