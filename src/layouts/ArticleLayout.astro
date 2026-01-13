@@ -17,22 +17,22 @@ const { title, description, keywords, tags = [] } = Astro.props;
     <!-- 主内容区 (占3份) -->
     <main class="md:col-span-3">
       <!-- 面包屑导航 -->
-      <nav class="text-sm mb-4 text-gray-600">
-        <a href="/" class="hover:text-black">首页</a>
+      <nav class="text-sm mb-6 text-gray-600 border-b border-gray-200 pb-4">
+        <a href="/" class="text-blue-600 hover:text-red-600 hover:underline">首页</a>
         <span class="mx-2">/</span>
-        <span class="text-black">{title}</span>
+        <span class="text-black font-medium">{title}</span>
       </nav>
 
       <!-- 文章标题 -->
-      <h1 class="text-3xl font-bold mb-4 border-b-2 border-black pb-2">{title}</h1>
+      <h1 class="text-4xl font-bold mb-6 border-b-2 border-black pb-4 leading-tight">{title}</h1>
 
       <!-- 标签 -->
       {tags.length > 0 && (
-        <div class="flex gap-2 mb-6">
+        <div class="flex flex-wrap gap-2 mb-8">
           {tags.map(tag => (
             <a 
               href={`/tags/${tag}`} 
-              class="text-xs text-gray-500 hover:text-gray-800 bg-gray-100 px-2 py-1 border border-gray-200 rounded-none"
+              class="text-xs text-gray-600 hover:text-gray-900 bg-gray-100 px-3 py-1 border border-gray-300 rounded-none hover:bg-gray-200 transition-colors"
             >
               #{tag}
             </a>
@@ -41,7 +41,7 @@ const { title, description, keywords, tags = [] } = Astro.props;
       )}
 
       <!-- 文章内容 -->
-      <article class="prose prose-lg max-w-none">
+      <article class="prose prose-base max-w-none leading-relaxed">
         <slot />
       </article>
     </main>
@@ -49,11 +49,11 @@ const { title, description, keywords, tags = [] } = Astro.props;
     <!-- 侧边栏 (占1份) -->
     <aside class="md:col-span-1 border-l-0 md:border-l border-gray-200 md:pl-6 space-y-8">
       <!-- 标签云 -->
-      <div>
-        <h3 class="font-bold border-b-2 border-black mb-3 pb-1 text-sm uppercase tracking-wide">
+      <div class="sticky top-4">
+        <h3 class="font-bold border-b-2 border-black mb-4 pb-2 text-sm uppercase tracking-wider">
           标签
         </h3>
-        <div id="tags-list" class="flex flex-wrap gap-x-3 gap-y-1 text-sm leading-relaxed text-gray-700">
+        <div id="tags-list" class="flex flex-wrap gap-x-2 gap-y-2 text-sm leading-relaxed text-gray-700">
           <!-- 标签将通过 JavaScript 动态加载 -->
         </div>
       </div>
@@ -62,31 +62,144 @@ const { title, description, keywords, tags = [] } = Astro.props;
 </Layout>
 
 <style>
-  /* Prose 样式覆盖 */
+  /* 文章内容的额外样式优化 */
   :global(.prose) {
     color: #000;
+    font-size: 16px;
+    line-height: 1.8;
   }
+
   :global(.prose a) {
     color: #0000EE;
     text-decoration: none;
+    transition: color 0.2s ease;
   }
+
   :global(.prose a:hover) {
+    color: #FF0000;
     text-decoration: underline;
   }
-  :global(.prose h2) {
-    border-bottom: 1px solid #ccc;
-    padding-bottom: 0.5rem;
-    margin-top: 2rem;
+
+  :global(.prose a:visited) {
+    color: #551A8B;
   }
+
+  :global(.prose h2) {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 0.5em;
+    line-height: 1.3;
+  }
+
+  :global(.prose h3) {
+    font-size: 1.25em;
+    font-weight: bold;
+    margin-top: 1.25em;
+    margin-bottom: 0.5em;
+    line-height: 1.3;
+  }
+
+  :global(.prose p) {
+    margin-bottom: 1em;
+    font-size: 16px;
+    line-height: 1.8;
+  }
+
+  :global(.prose ul),
+  :global(.prose ol) {
+    margin-left: 2em;
+    margin-bottom: 1em;
+  }
+
+  :global(.prose li) {
+    margin-bottom: 0.5em;
+    font-size: 16px;
+    line-height: 1.8;
+  }
+
   :global(.prose code) {
     background-color: #f5f5f5;
-    padding: 0.2rem 0.4rem;
+    padding: 0.2em 0.4em;
     border-radius: 0;
     font-family: 'Courier New', Courier, monospace;
+    font-size: 0.95em;
+    color: #d63384;
   }
+
   :global(.prose pre) {
     background-color: #f5f5f5;
     border: 1px solid #ccc;
+    padding: 1em;
+    overflow-x: auto;
+    margin-bottom: 1em;
+    border-radius: 0;
+  }
+
+  :global(.prose pre code) {
+    background-color: transparent;
+    padding: 0;
+    color: #000;
+  }
+
+  :global(.prose blockquote) {
+    border-left: 4px solid #ccc;
+    padding-left: 1em;
+    margin-left: 0;
+    margin-bottom: 1em;
+    color: #666;
+    font-style: italic;
+  }
+
+  :global(.prose table) {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 1em;
+    font-size: 16px;
+  }
+
+  :global(.prose th),
+  :global(.prose td) {
+    border: 1px solid #ccc;
+    padding: 0.75em;
+    text-align: left;
+  }
+
+  :global(.prose th) {
+    background-color: #f5f5f5;
+    font-weight: bold;
+  }
+
+  :global(.prose img) {
+    max-width: 100%;
+    height: auto;
+    margin: 1em 0;
+    border: 1px solid #ccc;
+  }
+
+  /* 移动端响应式 */
+  @media (max-width: 768px) {
+    :global(.prose) {
+      font-size: 15px;
+    }
+
+    :global(.prose h2) {
+      font-size: 1.25em;
+    }
+
+    :global(.prose h3) {
+      font-size: 1.1em;
+    }
+
+    :global(.prose p) {
+      font-size: 15px;
+    }
+
+    :global(.prose li) {
+      font-size: 15px;
+    }
   }
 </style>
 
@@ -99,7 +212,7 @@ const { title, description, keywords, tags = [] } = Astro.props;
       const tagsList = document.getElementById('tags-list');
       if (tagsList && tags.length > 0) {
         tagsList.innerHTML = tags.map((tag: string) => 
-          `<a href="/tags/${tag}" class="text-link hover:text-link-hover hover:underline">[#${tag}]</a>`
+          `<a href="/tags/${tag}" class="text-blue-600 hover:text-red-600 hover:underline">[#${tag}]</a>`
         ).join('');
       }
     } catch (error) {

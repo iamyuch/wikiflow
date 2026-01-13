@@ -1,9 +1,15 @@
 @import "tailwindcss";
 
 /* 经典 Web2 风格样式 */
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-size: 15px;
-  line-height: 1.5;
+  line-height: 1.6;
+  color: #000;
+  background-color: #fff;
 }
 
 a:hover {
@@ -22,4 +28,171 @@ input:focus {
   --color-link-hover: #FF0000;
   --color-border: #CCCCCC;
   --color-page: #F5F5F5;
+}
+
+/* 文章内容排版优化 */
+.prose {
+  max-width: 100%;
+  font-size: 16px;
+  line-height: 1.8;
+  color: #000;
+}
+
+.prose h1 {
+  font-size: 2em;
+  font-weight: bold;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  line-height: 1.2;
+  border-bottom: 2px solid #000;
+  padding-bottom: 0.5em;
+}
+
+.prose h2 {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  line-height: 1.3;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 0.5em;
+}
+
+.prose h3 {
+  font-size: 1.25em;
+  font-weight: bold;
+  margin-top: 1.25em;
+  margin-bottom: 0.5em;
+  line-height: 1.3;
+}
+
+.prose h4,
+.prose h5,
+.prose h6 {
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+}
+
+.prose p {
+  margin-bottom: 1em;
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.prose a {
+  color: #0000EE;
+  text-decoration: none;
+}
+
+.prose a:hover {
+  color: #FF0000;
+  text-decoration: underline;
+}
+
+.prose a:visited {
+  color: #551A8B;
+}
+
+.prose ul,
+.prose ol {
+  margin-left: 2em;
+  margin-bottom: 1em;
+}
+
+.prose li {
+  margin-bottom: 0.5em;
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.prose code {
+  background-color: #f5f5f5;
+  padding: 0.2em 0.4em;
+  border-radius: 0;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.95em;
+  color: #d63384;
+}
+
+.prose pre {
+  background-color: #f5f5f5;
+  border: 1px solid #ccc;
+  padding: 1em;
+  overflow-x: auto;
+  margin-bottom: 1em;
+  border-radius: 0;
+}
+
+.prose pre code {
+  background-color: transparent;
+  padding: 0;
+  color: #000;
+}
+
+.prose blockquote {
+  border-left: 4px solid #ccc;
+  padding-left: 1em;
+  margin-left: 0;
+  margin-bottom: 1em;
+  color: #666;
+  font-style: italic;
+}
+
+.prose table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 1em;
+  font-size: 16px;
+}
+
+.prose th,
+.prose td {
+  border: 1px solid #ccc;
+  padding: 0.75em;
+  text-align: left;
+}
+
+.prose th {
+  background-color: #f5f5f5;
+  font-weight: bold;
+}
+
+.prose img {
+  max-width: 100%;
+  height: auto;
+  margin: 1em 0;
+  border: 1px solid #ccc;
+}
+
+/* 移动端响应式调整 */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+
+  .prose {
+    font-size: 15px;
+  }
+
+  .prose h1 {
+    font-size: 1.5em;
+  }
+
+  .prose h2 {
+    font-size: 1.25em;
+  }
+
+  .prose h3 {
+    font-size: 1.1em;
+  }
+
+  .prose p {
+    font-size: 15px;
+  }
+
+  .prose li {
+    font-size: 15px;
+  }
 }

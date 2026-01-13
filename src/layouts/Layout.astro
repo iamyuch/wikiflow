@@ -22,27 +22,29 @@ const fullTitle = title === siteTitle ? title : `${title} - ${siteTitle}`;
   {keywords && <meta name="keywords" content={keywords}>}
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="sitemap" href="/sitemap-index.xml">
+  <meta name="theme-color" content="#ffffff">
 </head>
 <body class="bg-white text-black min-h-screen">
-  <div class="max-w-5xl mx-auto px-4 py-6 bg-white min-h-screen border-x border-gray-200 shadow-none">
+  <div class="max-w-6xl mx-auto px-4 py-8 bg-white min-h-screen border-x border-gray-200 shadow-none">
     <!-- 头部：Logo 和 搜索 -->
-    <header class="flex flex-col md:flex-row md:items-end justify-between border-b-2 border-black pb-4 mb-6 gap-4">
-      <div>
-        <h1 class="text-3xl font-bold tracking-tighter text-black font-sans">
-          <a href="/" class="no-underline hover:none text-black">WikiFlow</a>
+    <header class="flex flex-col md:flex-row md:items-center justify-between border-b-2 border-black pb-6 mb-8 gap-6">
+      <div class="flex-shrink-0">
+        <h1 class="text-4xl font-bold tracking-tighter text-black font-sans">
+          <a href="/" class="no-underline hover:text-gray-600 text-black transition-colors">WikiFlow</a>
         </h1>
+        <p class="text-sm text-gray-600 mt-1">极简索引</p>
       </div>
       
       <!-- 朴素的搜索框 -->
-      <div class="w-full md:w-auto">
+      <div class="w-full md:w-auto flex-shrink-0">
         <form id="search-form" class="flex gap-1">
           <input 
             type="text" 
             id="search-input"
             placeholder="搜索文章标题..." 
-            class="border border-gray-400 px-2 py-1 w-64 text-sm rounded-none focus:border-black"
+            class="border border-gray-400 px-3 py-2 w-full md:w-64 text-sm rounded-none focus:outline-none focus:border-black focus:ring-1 focus:ring-black"
           >
-          <button type="submit" class="bg-gray-200 border border-gray-400 px-3 py-1 text-sm text-black hover:bg-gray-300 active:bg-gray-400 rounded-none font-medium">
+          <button type="submit" class="bg-gray-100 border border-gray-400 px-4 py-2 text-sm text-black hover:bg-gray-200 active:bg-gray-300 rounded-none font-medium transition-colors">
             搜索
           </button>
         </form>
@@ -52,9 +54,9 @@ const fullTitle = title === siteTitle ? title : `${title} - ${siteTitle}`;
     <slot />
 
     <!-- 极简 Footer -->
-    <footer class="mt-12 pt-6 border-t border-gray-300 text-center text-xs text-gray-500">
+    <footer class="mt-16 pt-8 border-t border-gray-300 text-center text-xs text-gray-600">
       <p class="mb-2">
-        &copy; 2023 WikiFlow. Powered by <a href="https://astro.build" class="text-gray-600 underline">Astro</a>. 
+        &copy; 2024 WikiFlow. Powered by <a href="https://astro.build" class="text-blue-600 hover:text-red-600 hover:underline">Astro</a>. 
       </p>
     </footer>
   </div>
@@ -70,6 +72,14 @@ const fullTitle = title === siteTitle ? title : `${title} - ${siteTitle}`;
         const query = searchInput.value.trim();
         if (query) {
           window.location.href = `/search?q=${encodeURIComponent(query)}`;
+        }
+      });
+
+      // 快捷键：Ctrl/Cmd + K 聚焦搜索框
+      document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+          e.preventDefault();
+          searchInput.focus();
         }
       });
     }
