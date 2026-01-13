@@ -12,10 +12,10 @@ const { title, description, keywords, tags = [] } = Astro.props;
 ---
 
 <Layout title={title} description={description} keywords={keywords}>
-  <!-- 调整布局比例：主内容区占更大空间 -->
-  <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
-    <!-- 主内容区 (占4份，更宽) -->
-    <main class="lg:col-span-4">
+  <!-- 调整布局比例：主内容区占3份，侧栏占2份，提供更宽的侧栏空间 -->
+  <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+    <!-- 主内容区 (占3份) -->
+    <main class="lg:col-span-3">
       <!-- 面包屑导航 -->
       <nav class="text-sm mb-6 text-gray-600 border-b border-gray-200 pb-4">
         <a href="/" class="text-blue-600 hover:text-red-600 hover:underline">首页</a>
@@ -46,15 +46,15 @@ const { title, description, keywords, tags = [] } = Astro.props;
       </article>
     </main>
 
-    <!-- 侧边栏 (占1份，更窄) -->
-    <aside class="lg:col-span-1 border-l-0 lg:border-l border-gray-200 lg:pl-6 space-y-8">
+    <!-- 侧边栏 (占2份，更宽) -->
+    <aside class="lg:col-span-2 border-l-0 lg:border-l border-gray-200 lg:pl-6 space-y-8">
       <div class="lg:sticky lg:top-4 space-y-8">
         <!-- 文档目录 -->
         <div id="toc-container" class="hidden">
           <h3 class="font-bold border-b-2 border-black mb-4 pb-2 text-sm uppercase tracking-wider">
             目录
           </h3>
-          <nav id="toc-list" class="text-sm space-y-1">
+          <nav id="toc-list" class="text-sm space-y-0.5">
             <!-- 目录将通过 JavaScript 动态生成 -->
           </nav>
         </div>
@@ -237,37 +237,52 @@ const { title, description, keywords, tags = [] } = Astro.props;
     border: 1px solid #ccc;
   }
 
-  /* 目录样式 */
-  #toc-list a {
+  /* 目录样式 - 优化层级展示 */
+  #toc-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  #toc-list .toc-item {
     display: block;
     color: #666;
     text-decoration: none;
-    padding: 0.25rem 0;
+    padding: 0.35rem 0;
     transition: color 0.2s ease;
+    line-height: 1.5;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
 
-  #toc-list a:hover {
+  #toc-list .toc-item:hover {
     color: #0000EE;
     text-decoration: underline;
   }
 
-  #toc-list a.active {
+  #toc-list .toc-item.active {
     color: #0000EE;
     font-weight: 600;
   }
 
+  /* 目录层级缩进 */
   #toc-list .toc-h2 {
     padding-left: 0;
+    font-weight: 600;
+    margin-top: 0.5em;
+  }
+
+  #toc-list .toc-h2:first-child {
+    margin-top: 0;
   }
 
   #toc-list .toc-h3 {
-    padding-left: 1em;
-    font-size: 0.95em;
+    padding-left: 1.2em;
   }
 
   #toc-list .toc-h4 {
-    padding-left: 2em;
-    font-size: 0.9em;
+    padding-left: 2.4em;
+    font-size: 0.95em;
   }
 
   /* 移动端响应式 */
@@ -331,14 +346,20 @@ const { title, description, keywords, tags = [] } = Astro.props;
     tocContainer.classList.remove('hidden');
     
     let tocHTML = '';
+    let lastLevel = 0;
+
     headings.forEach((heading, index) => {
       const id = `heading-${index}`;
       heading.id = id;
       
-      const level = heading.tagName.toLowerCase();
+      const level = parseInt(heading.tagName[1]); // 获取 2, 3, 4
       const text = heading.textContent || '';
       
-      tocHTML += `<a href="#${id}" class="toc-${level} hover:text-blue-600">${text}</a>`;
+      // 添加样式类
+      const levelClass = `toc-h${level}`;
+      
+      tocHTML += `<a href="#${id}" class="toc-item ${levelClass}">${text}</a>`;
+      lastLevel = level;
     });
     
     tocList.innerHTML = tocHTML;
@@ -349,7 +370,7 @@ const { title, description, keywords, tags = [] } = Astro.props;
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const id = entry.target.id;
-            document.querySelectorAll('#toc-list a').forEach((link) => {
+            document.querySelectorAll('#toc-list .toc-item').forEach((link) => {
               link.classList.remove('active');
             });
             const activeLink = document.querySelector(`#toc-list a[href="#${id}"]`);
