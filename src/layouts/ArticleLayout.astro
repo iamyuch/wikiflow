@@ -12,10 +12,10 @@ const { title, description, keywords, tags = [] } = Astro.props;
 ---
 
 <Layout title={title} description={description} keywords={keywords}>
-  <!-- 调整布局比例：主内容区占3份，侧栏占2份，提供更宽的侧栏空间 -->
+  <!-- 调整布局比例：主内容区占4份，侧栏占1份（约16个字宽度） -->
   <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
-    <!-- 主内容区 (占3份) -->
-    <main class="lg:col-span-3">
+    <!-- 主内容区 (占4份) -->
+    <main class="lg:col-span-4">
       <!-- 面包屑导航 -->
       <nav class="text-sm mb-6 text-gray-600 border-b border-gray-200 pb-4">
         <a href="/" class="text-blue-600 hover:text-red-600 hover:underline">首页</a>
@@ -46,9 +46,9 @@ const { title, description, keywords, tags = [] } = Astro.props;
       </article>
     </main>
 
-    <!-- 侧边栏 (占2份，更宽) -->
-    <aside class="lg:col-span-2 border-l-0 lg:border-l border-gray-200 lg:pl-6 space-y-8">
-      <div class="lg:sticky lg:top-4 space-y-8">
+    <!-- 侧边栏 (占1份，约16个字宽度) -->
+    <aside class="lg:col-span-1 border-l-0 lg:border-l border-gray-200 lg:pl-6">
+      <div class="lg:sticky lg:top-4">
         <!-- 文档目录 -->
         <div id="toc-container" class="hidden">
           <h3 class="font-bold border-b-2 border-black mb-4 pb-2 text-sm uppercase tracking-wider">
@@ -57,16 +57,6 @@ const { title, description, keywords, tags = [] } = Astro.props;
           <nav id="toc-list" class="text-sm space-y-0.5">
             <!-- 目录将通过 JavaScript 动态生成 -->
           </nav>
-        </div>
-
-        <!-- 标签云 -->
-        <div>
-          <h3 class="font-bold border-b-2 border-black mb-4 pb-2 text-sm uppercase tracking-wider">
-            标签
-          </h3>
-          <div id="tags-list" class="flex flex-wrap gap-x-2 gap-y-2 text-sm leading-relaxed text-gray-700">
-            <!-- 标签将通过 JavaScript 动态加载 -->
-          </div>
         </div>
       </div>
     </aside>
@@ -346,7 +336,6 @@ const { title, description, keywords, tags = [] } = Astro.props;
     tocContainer.classList.remove('hidden');
     
     let tocHTML = '';
-    let lastLevel = 0;
 
     headings.forEach((heading, index) => {
       const id = `heading-${index}`;
@@ -359,7 +348,6 @@ const { title, description, keywords, tags = [] } = Astro.props;
       const levelClass = `toc-h${level}`;
       
       tocHTML += `<a href="#${id}" class="toc-item ${levelClass}">${text}</a>`;
-      lastLevel = level;
     });
     
     tocList.innerHTML = tocHTML;
@@ -388,25 +376,8 @@ const { title, description, keywords, tags = [] } = Astro.props;
     });
   }
 
-  // 加载所有标签
-  async function loadTags() {
-    try {
-      const response = await fetch('/api/tags.json');
-      const tags = await response.json();
-      const tagsList = document.getElementById('tags-list');
-      if (tagsList && tags.length > 0) {
-        tagsList.innerHTML = tags.map((tag: string) => 
-          `<a href="/tags/${tag}" class="text-blue-600 hover:text-red-600 hover:underline">[#${tag}]</a>`
-        ).join('');
-      }
-    } catch (error) {
-      console.error('Failed to load tags:', error);
-    }
-  }
-
   // 页面加载完成后执行
   document.addEventListener('DOMContentLoaded', () => {
     generateTOC();
-    loadTags();
   });
 </script>
