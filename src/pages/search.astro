@@ -50,7 +50,6 @@ import Layout from '../layouts/Layout.astro';
     slug: string;
     title: string;
     description: string;
-    category: string;
     date: string;
   }
 
@@ -123,11 +122,6 @@ import Layout from '../layouts/Layout.astro';
                 ${post.title}
               </a>
               <div class="flex items-center gap-3 flex-shrink-0">
-                ${post.category ? `
-                  <span class="text-xs text-gray-600 bg-gray-100 px-2 py-0.5 border border-gray-300">
-                    ${post.category}
-                  </span>
-                ` : ''}
                 ${post.date ? `
                   <span class="text-xs text-gray-500 font-mono">
                     ${formatDate(post.date)}

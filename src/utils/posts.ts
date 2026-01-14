@@ -7,7 +7,6 @@ export interface Post {
   title: string;
   description: string;
   keywords: string;
-  category: string;
   date: string;
   content: string;
 }
@@ -28,7 +27,6 @@ export async function getAllPosts(): Promise<Post[]> {
         title: data.title || 'Untitled',
         description: data.description || '',
         keywords: data.keywords || '',
-        category: data.category || '',
         date: data.date || '',
         content,
       };
