@@ -19,7 +19,6 @@ const htmlContent = marked(post.content);
   title={post.title}
   description={post.description}
   keywords={post.keywords}
-  tags={post.tags}
 >
   <div set:html={htmlContent} />
 </ArticleLayout>

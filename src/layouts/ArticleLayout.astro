@@ -5,10 +5,9 @@ interface Props {
   title: string;
   description?: string;
   keywords?: string;
-  tags?: string[];
 }
 
-const { title, description, keywords, tags = [] } = Astro.props;
+const { title, description, keywords } = Astro.props;
 ---
 
 <Layout title={title} description={description} keywords={keywords}>
@@ -26,19 +25,7 @@ const { title, description, keywords, tags = [] } = Astro.props;
       <!-- 文章标题 -->
       <h1 class="text-4xl font-bold mb-6 border-b-2 border-black pb-4 leading-tight">{title}</h1>
 
-      <!-- 标签 -->
-      {tags.length > 0 && (
-        <div class="flex flex-wrap gap-2 mb-8">
-          {tags.map(tag => (
-            <a 
-              href={`/tags/${tag}`} 
-              class="text-xs text-gray-600 hover:text-gray-900 bg-gray-100 px-3 py-1 border border-gray-300 rounded-none hover:bg-gray-200 transition-colors"
-            >
-              #{tag}
-            </a>
-          ))}
-        </div>
-      )}
+
 
       <!-- 文章内容 -->
       <article class="prose prose-lg max-w-none" id="article-content">

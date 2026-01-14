@@ -7,7 +7,6 @@ export interface Post {
   title: string;
   description: string;
   keywords: string;
-  tags: string[];
   date: string;
   content: string;
 }
@@ -28,7 +27,6 @@ export async function getAllPosts(): Promise<Post[]> {
         title: data.title || 'Untitled',
         description: data.description || '',
         keywords: data.keywords || '',
-        tags: data.tags || [],
         date: data.date || '',
         content,
       };
@@ -44,21 +42,7 @@ export async function getPostBySlug(slug: string): Promise<Post | undefined> {
   return posts.find(post => post.slug === slug);
 }
 
-export async function getAllTags(): Promise<string[]> {
-  const posts = await getAllPosts();
-  const tagsSet = new Set<string>();
-  
-  posts.forEach(post => {
-    post.tags.forEach(tag => tagsSet.add(tag));
-  });
 
-  return Array.from(tagsSet).sort();
-}
-
-export async function getPostsByTag(tag: string): Promise<Post[]> {
-  const posts = await getAllPosts();
-  return posts.filter(post => post.tags.includes(tag));
-}
 
 export function paginatePosts(posts: Post[], page: number = 1, pageSize: number = 30) {
   const start = (page - 1) * pageSize;
