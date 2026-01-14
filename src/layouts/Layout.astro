@@ -7,8 +7,8 @@ interface Props {
   keywords?: string;
 }
 
-const { title, description = 'utlium - 极简索引，专注于知识管理和分享', keywords = '' } = Astro.props;
-const siteTitle = 'utlium';
+const { title, description = 'utlium Blog - 极简索引，专注于知识管理和分享', keywords = '' } = Astro.props;
+const siteTitle = 'utlium Blog';
 const fullTitle = title === siteTitle ? title : `${title} - ${siteTitle}`;
 ---
 
@@ -30,7 +30,7 @@ const fullTitle = title === siteTitle ? title : `${title} - ${siteTitle}`;
     <header class="flex flex-col md:flex-row md:items-center justify-between border-b-2 border-black pb-6 mb-8 gap-6">
       <div class="flex-shrink-0">
         <h1 class="text-4xl font-bold tracking-tighter text-black font-sans">
-          <a href="/" class="no-underline hover:text-gray-600 text-black transition-colors">utlium</a>
+          <a href="/" class="no-underline hover:text-gray-600 text-black transition-colors">utlium Blog</a>
         </h1>
       </div>
       
