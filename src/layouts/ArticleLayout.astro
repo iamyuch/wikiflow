@@ -33,7 +33,7 @@ const { title, description, keywords } = Astro.props;
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
           </svg>
         </button>
-        <nav id="mobile-toc-list" class="hidden text-sm space-y-0.5 bg-gray-50 px-4 py-3">
+        <nav id="mobile-toc-list" class="hidden text-sm space-y-0 bg-gray-50 px-4 py-3">
           <!-- 目录将通过 JavaScript 动态生成 -->
         </nav>
       </div>
@@ -278,9 +278,9 @@ const { title, description, keywords } = Astro.props;
     display: block;
     color: #666;
     text-decoration: none;
-    padding: 0.5em 0;
+    padding: 0.25em 0;
     transition: color 0.2s ease;
-    line-height: 1.6;
+    line-height: 1.45;
     word-wrap: break-word;
     word-break: break-word;
     overflow-wrap: break-word;
@@ -364,7 +364,7 @@ const { title, description, keywords } = Astro.props;
     :global(#mobile-toc-list .toc-h2) {
       padding-left: 0;
       font-weight: 600;
-      margin-top: 0.5em;
+      margin-top: 0.2em;
     }
 
     :global(#mobile-toc-list .toc-h2:first-child) {
@@ -400,6 +400,15 @@ const { title, description, keywords } = Astro.props;
     if (!article) return;
 
     const headings = article.querySelectorAll('h2, h3, h4');
+    const minHeadingLevel = headings.length
+      ? Math.min(...Array.from(headings).map((heading) => parseInt(heading.tagName[1])))
+      : 2;
+
+    const getLevelClass = (heading) => {
+      const rawLevel = parseInt(heading.tagName[1]);
+      const normalizedLevel = Math.min(4, Math.max(2, rawLevel - minHeadingLevel + 2));
+      return `toc-h${normalizedLevel}`;
+    };
 
     // 移动端处理
     if (window.innerWidth <= 768) {
@@ -417,9 +426,8 @@ const { title, description, keywords } = Astro.props;
           const id = `heading-${index}`;
           heading.id = id;
 
-          const level = parseInt(heading.tagName[1]);
           const text = heading.textContent || '';
-          const levelClass = `toc-h${level}`;
+          const levelClass = getLevelClass(heading);
 
           tocHTML += `<a href="#${id}" class="toc-item ${levelClass}">${text}</a>`;
         });
@@ -430,14 +438,6 @@ const { title, description, keywords } = Astro.props;
         tocToggle.addEventListener('click', () => {
           mobileTocList.classList.toggle('hidden');
           tocArrow.classList.toggle('rotate-180');
-        });
-
-        // 点击目录项后自动折叠
-        mobileTocList.querySelectorAll('.toc-item').forEach(item => {
-          item.addEventListener('click', () => {
-            mobileTocList.classList.add('hidden');
-            tocArrow.classList.remove('rotate-180');
-          });
         });
       }
       return;
@@ -459,9 +459,8 @@ const { title, description, keywords } = Astro.props;
       const id = `heading-${index}`;
       heading.id = id;
 
-      const level = parseInt(heading.tagName[1]);
       const text = heading.textContent || '';
-      const levelClass = `toc-h${level}`;
+      const levelClass = getLevelClass(heading);
 
       tocHTML += `<a href="#${id}" class="toc-item ${levelClass}">${text}</a>`;
     });
