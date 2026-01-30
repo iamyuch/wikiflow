@@ -226,12 +226,12 @@ const { title, description, keywords } = Astro.props;
   }
 
   /* 目录样式 - 优化层级展示 */
-  #desktop-toc-list {
+  :global(#desktop-toc-list) {
     display: flex;
     flex-direction: column;
   }
 
-  #desktop-toc-list .toc-item {
+  :global(#desktop-toc-list .toc-item) {
     display: block;
     color: #666;
     text-decoration: none;
@@ -243,38 +243,38 @@ const { title, description, keywords } = Astro.props;
     overflow-wrap: break-word;
   }
 
-  #desktop-toc-list .toc-item:hover {
+  :global(#desktop-toc-list .toc-item:hover) {
     color: #0000EE;
     text-decoration: underline;
   }
 
-  #desktop-toc-list .toc-item.active {
+  :global(#desktop-toc-list .toc-item.active) {
     color: #0000EE;
     font-weight: 600;
   }
 
   /* 目录层级缩进 - 相对于上一级缩进 */
-  #desktop-toc-list .toc-h2 {
+  :global(#desktop-toc-list .toc-h2) {
     padding-left: 0;
     font-weight: 600;
     margin-top: 0.5em;
   }
 
-  #desktop-toc-list .toc-h2:first-child {
+  :global(#desktop-toc-list .toc-h2:first-child) {
     margin-top: 0;
   }
 
-  #desktop-toc-list .toc-h3 {
+  :global(#desktop-toc-list .toc-h3) {
     padding-left: 1em;
   }
 
-  #desktop-toc-list .toc-h4 {
+  :global(#desktop-toc-list .toc-h4) {
     padding-left: 2em;
     font-size: 0.95em;
   }
 
   /* 移动端可折叠目录样式 */
-  #mobile-toc-list .toc-item {
+  :global(#mobile-toc-list .toc-item) {
     display: block;
     color: #666;
     text-decoration: none;
@@ -289,12 +289,12 @@ const { title, description, keywords } = Astro.props;
     box-sizing: border-box;
   }
 
-  #mobile-toc-list .toc-item:hover {
+  :global(#mobile-toc-list .toc-item:hover) {
     color: #0000EE;
     text-decoration: underline;
   }
 
-  #mobile-toc-list .toc-item.active {
+  :global(#mobile-toc-list .toc-item.active) {
     color: #0000EE;
     font-weight: 600;
   }
@@ -343,16 +343,16 @@ const { title, description, keywords } = Astro.props;
     }
 
     /* 移动端目录列表样式 - 覆盖全局 flex 布局 */
-    #mobile-toc-list {
+    :global(#mobile-toc-list) {
       display: block !important;
     }
 
-    #mobile-toc-list.hidden {
+    :global(#mobile-toc-list.hidden) {
       display: none !important;
     }
 
     /* 移动端目录项确保换行 */
-    #mobile-toc-list .toc-item {
+    :global(#mobile-toc-list .toc-item) {
       display: block !important;
       white-space: normal !important;
       width: 100% !important;
@@ -361,21 +361,21 @@ const { title, description, keywords } = Astro.props;
     }
 
     /* 移动端目录层级缩进 */
-    #mobile-toc-list .toc-h2 {
+    :global(#mobile-toc-list .toc-h2) {
       padding-left: 0;
       font-weight: 600;
       margin-top: 0.5em;
     }
 
-    #mobile-toc-list .toc-h2:first-child {
+    :global(#mobile-toc-list .toc-h2:first-child) {
       margin-top: 0;
     }
 
-    #mobile-toc-list .toc-h3 {
+    :global(#mobile-toc-list .toc-h3) {
       padding-left: 1.5em;
     }
 
-    #mobile-toc-list .toc-h4 {
+    :global(#mobile-toc-list .toc-h4) {
       padding-left: 2.5em;
       font-size: 0.95em;
     }
