@@ -348,6 +348,26 @@ const { title, description, keywords } = Astro.props;
       display: none;
     }
 
+    /* 移动端目录层级缩进 */
+    #toc-list .toc-h2 {
+      padding-left: 0;
+      font-weight: 600;
+      margin-top: 0.5em;
+    }
+
+    #toc-list .toc-h2:first-child {
+      margin-top: 0;
+    }
+
+    #toc-list .toc-h3 {
+      padding-left: 1em;
+    }
+
+    #toc-list .toc-h4 {
+      padding-left: 2em;
+      font-size: 0.95em;
+    }
+
     /* 折叠箭头旋转动画 */
     .rotate-180 {
       transform: rotate(180deg);
