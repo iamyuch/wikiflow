@@ -33,7 +33,7 @@ const { title, description, keywords } = Astro.props;
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
           </svg>
         </button>
-        <nav id="toc-list" class="hidden text-sm space-y-0.5 bg-gray-50 px-4 py-3">
+        <nav id="mobile-toc-list" class="hidden text-sm space-y-0.5 bg-gray-50 px-4 py-3">
           <!-- 目录将通过 JavaScript 动态生成 -->
         </nav>
       </div>
@@ -52,7 +52,7 @@ const { title, description, keywords } = Astro.props;
           <h3 class="font-bold border-b-2 border-black mb-4 pb-2 text-sm uppercase tracking-wider">
             目录
           </h3>
-          <nav id="toc-list" class="text-sm space-y-0.5">
+          <nav id="desktop-toc-list" class="text-sm space-y-0.5">
             <!-- 目录将通过 JavaScript 动态生成 -->
           </nav>
         </div>
@@ -226,7 +226,7 @@ const { title, description, keywords } = Astro.props;
   }
 
   /* 目录样式 - 优化层级展示 */
-  #toc-list {
+  #desktop-toc-list {
     display: flex;
     flex-direction: column;
   }
@@ -254,21 +254,21 @@ const { title, description, keywords } = Astro.props;
   }
 
   /* 目录层级缩进 - 相对于上一级缩进 */
-  #toc-list .toc-h2 {
+  #desktop-toc-list .toc-h2 {
     padding-left: 0;
     font-weight: 600;
     margin-top: 0.5em;
   }
 
-  #toc-list .toc-h2:first-child {
+  #desktop-toc-list .toc-h2:first-child {
     margin-top: 0;
   }
 
-  #toc-list .toc-h3 {
+  #desktop-toc-list .toc-h3 {
     padding-left: 1em;
   }
 
-  #toc-list .toc-h4 {
+  #desktop-toc-list .toc-h4 {
     padding-left: 2em;
     font-size: 0.95em;
   }
@@ -380,17 +380,18 @@ const { title, description, keywords } = Astro.props;
   function generateTOC() {
     const article = document.getElementById('article-content');
     const tocContainer = document.getElementById('toc-container');
-    const tocList = document.getElementById('toc-list');
+    const mobileTocList = document.getElementById('mobile-toc-list');
+    const desktopTocList = document.getElementById('desktop-toc-list');
     const tocToggle = document.getElementById('toc-toggle');
     const tocArrow = document.getElementById('toc-arrow');
 
-    if (!article || !tocList) return;
+    if (!article) return;
 
     const headings = article.querySelectorAll('h2, h3, h4');
 
     // 移动端处理
     if (window.innerWidth <= 768) {
-      if (tocToggle) {
+      if (mobileTocList && tocToggle) {
         if (headings.length === 0) {
           tocToggle.classList.add('hidden');
           return;
@@ -411,18 +412,18 @@ const { title, description, keywords } = Astro.props;
           tocHTML += `<a href="#${id}" class="toc-item ${levelClass}">${text}</a>`;
         });
 
-        tocList.innerHTML = tocHTML;
+        mobileTocList.innerHTML = tocHTML;
 
         // 点击切换目录显示/隐藏
         tocToggle.addEventListener('click', () => {
-          tocList.classList.toggle('hidden');
+          mobileTocList.classList.toggle('hidden');
           tocArrow.classList.toggle('rotate-180');
         });
 
         // 点击目录项后自动折叠
-        tocList.querySelectorAll('.toc-item').forEach(item => {
+        mobileTocList.querySelectorAll('.toc-item').forEach(item => {
           item.addEventListener('click', () => {
-            tocList.classList.add('hidden');
+            mobileTocList.classList.add('hidden');
             tocArrow.classList.remove('rotate-180');
           });
         });
@@ -431,7 +432,7 @@ const { title, description, keywords } = Astro.props;
     }
 
     // 桌面端处理
-    if (!tocContainer) return;
+    if (!tocContainer || !desktopTocList) return;
 
     if (headings.length === 0) {
       tocContainer.classList.add('hidden');
@@ -453,7 +454,7 @@ const { title, description, keywords } = Astro.props;
       tocHTML += `<a href="#${id}" class="toc-item ${levelClass}">${text}</a>`;
     });
 
-    tocList.innerHTML = tocHTML;
+    desktopTocList.innerHTML = tocHTML;
 
     // 滚动高亮当前标题
     const observer = new IntersectionObserver(
@@ -461,10 +462,10 @@ const { title, description, keywords } = Astro.props;
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const id = entry.target.id;
-            document.querySelectorAll('#toc-list .toc-item').forEach((link) => {
+            document.querySelectorAll('#desktop-toc-list .toc-item').forEach((link) => {
               link.classList.remove('active');
             });
-            const activeLink = document.querySelector(`#toc-list a[href="#${id}"]`);
+            const activeLink = document.querySelector(`#desktop-toc-list a[href="#${id}"]`);
             if (activeLink) {
               activeLink.classList.add('active');
             }
