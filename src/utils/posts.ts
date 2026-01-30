@@ -8,6 +8,7 @@ export interface Post {
   description: string;
   keywords: string;
   date: string;
+  tags: string[];
   content: string;
 }
 
@@ -21,6 +22,11 @@ export async function getAllPosts(): Promise<Post[]> {
       const filePath = join(contentDir, file);
       const fileContent = await readFile(filePath, 'utf-8');
       const { data, content } = matter(fileContent);
+      const tags = Array.isArray(data.tags)
+        ? data.tags.map((tag) => String(tag))
+        : data.tags
+          ? [String(data.tags)]
+          : [];
 
       return {
         slug: data.slug || file.replace('.md', ''),
@@ -28,6 +34,7 @@ export async function getAllPosts(): Promise<Post[]> {
         description: data.description || '',
         keywords: data.keywords || '',
         date: data.date || '',
+        tags,
         content,
       };
     })
