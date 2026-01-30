@@ -1,0 +1,66 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getAllPosts } from '../../utils/posts';
+
+export async function getStaticPaths() {
+  const posts = await getAllPosts();
+  const tags = new Set<string>();
+
+  posts.forEach((post) => {
+    post.tags.forEach((tag) => tags.add(tag));
+  });
+
+  return Array.from(tags).map((tag) => ({
+    params: { tag: encodeURIComponent(tag) },
+    props: { tag },
+  }));
+}
+
+const { tag } = Astro.props;
+const allPosts = await getAllPosts();
+const posts = allPosts.filter((post) => post.tags.includes(tag));
+---
+
+<Layout title={`标签: ${tag}`} description={`标签「${tag}」下的文章`}>
+  <!-- 单栏布局 -->
+  <div>
+    <!-- 主内容区 -->
+    <main>
+      <!-- 面包屑导航 -->
+      <nav class="text-sm mb-6 text-gray-600 border-b border-gray-200 pb-4">
+        <a href="/" class="text-blue-600 hover:text-red-600 hover:underline">首页</a>
+        <span class="mx-2">/</span>
+        <span class="text-black font-medium">标签: {tag}</span>
+      </nav>
+
+      <!-- 标签标题 -->
+      <h1 class="text-3xl font-bold mb-6 border-b-2 border-black pb-4">
+        标签: {tag}
+        <span class="text-base text-gray-500 ml-3 font-normal">({posts.length} 篇)</span>
+      </h1>
+
+      <!-- 文章列表 -->
+      {posts.length > 0 ? (
+        <ul class="space-y-0 text-base" id="tag-article-list">
+          {posts.map((post) => (
+            <li class="group py-2 border-b border-dotted border-gray-300 flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-4 hover:bg-gray-50 transition-colors">
+              <span class="font-mono text-gray-500 text-xs w-24 flex-shrink-0">
+                [{post.date ? new Date(post.date).toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' }) : ''}]
+              </span>
+              <div class="flex-grow">
+                <a href={`/posts/${post.slug}`} class="text-[#0000EE] hover:text-[#FF0000] font-medium visited:text-[#551A8B] text-lg">
+                  {post.title}
+                </a>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div class="py-16 text-center bg-gray-50 border border-gray-200">
+          <p class="text-gray-600">暂无文章</p>
+        </div>
+      )}
+    </main>
+  </div>
+</Layout>
+

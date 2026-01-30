@@ -30,9 +30,13 @@ const { title, description, keywords, tags } = Astro.props;
           <div class="mt-2 text-sm text-gray-600 flex flex-wrap items-center gap-x-2 gap-y-1">
             <span class="text-xs text-gray-500 font-medium">标签:</span>
             {tags.map((tag) => (
-              <span class="inline-block px-2 py-0.5 border border-gray-300 bg-white text-xs text-gray-600">
+              <a
+                href={`/tags/${encodeURIComponent(tag)}`}
+                class="inline-block px-2 py-0.5 border border-gray-300 bg-white text-xs text-gray-600 visited:text-gray-600 no-underline hover:underline hover:text-[#0000EE] hover:border-gray-400 transition-colors"
+                rel="tag"
+              >
                 {tag}
-              </span>
+              </a>
             ))}
           </div>
         )}
