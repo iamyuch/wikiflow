@@ -25,7 +25,18 @@ const { title, description, keywords } = Astro.props;
       <!-- 文章标题 -->
       <h1 class="text-4xl font-bold mb-6 border-b-2 border-black pb-4 leading-tight">{title}</h1>
 
-
+      <!-- 移动端可折叠目录 -->
+      <div class="lg:hidden mb-6">
+        <button id="toc-toggle" class="w-full flex items-center justify-between bg-gray-100 hover:bg-gray-200 px-4 py-3 font-bold transition-colors">
+          <span>目录</span>
+          <svg id="toc-arrow" class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </button>
+        <nav id="toc-list" class="hidden text-sm space-y-0.5 bg-gray-50 px-4 py-3">
+          <!-- 目录将通过 JavaScript 动态生成 -->
+        </nav>
+      </div>
 
       <!-- 文章内容 -->
       <article class="prose prose-lg max-w-none" id="article-content">
@@ -262,10 +273,33 @@ const { title, description, keywords } = Astro.props;
     font-size: 0.95em;
   }
 
+  /* 移动端可折叠目录样式 */
+  #toc-list .toc-item {
+    display: block;
+    color: #666;
+    text-decoration: none;
+    padding: 0.35rem 0;
+    transition: color 0.2s ease;
+    line-height: 1.5;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  #toc-list .toc-item:hover {
+    color: #0000EE;
+    text-decoration: underline;
+  }
+
+  #toc-list .toc-item.active {
+    color: #0000EE;
+    font-weight: 600;
+  }
+
   /* 移动端响应式 */
   @media (max-width: 768px) {
     :global(.prose) {
-      font-size: 15px;
+      font-size: 16px;
     }
 
     :global(.prose h1) {
@@ -304,6 +338,11 @@ const { title, description, keywords } = Astro.props;
       padding: 1em;
       font-size: 0.9em;
     }
+
+    /* 折叠箭头旋转动画 */
+    .rotate-180 {
+      transform: rotate(180deg);
+    }
   }
 </style>
 
@@ -313,33 +352,78 @@ const { title, description, keywords } = Astro.props;
     const article = document.getElementById('article-content');
     const tocContainer = document.getElementById('toc-container');
     const tocList = document.getElementById('toc-list');
-    
-    if (!article || !tocContainer || !tocList) return;
+    const tocToggle = document.getElementById('toc-toggle');
+    const tocArrow = document.getElementById('toc-arrow');
+
+    if (!article || !tocList) return;
 
     const headings = article.querySelectorAll('h2, h3, h4');
-    
+
+    // 移动端处理
+    if (window.innerWidth <= 768) {
+      if (tocToggle) {
+        if (headings.length === 0) {
+          tocToggle.classList.add('hidden');
+          return;
+        }
+
+        tocToggle.classList.remove('hidden');
+
+        let tocHTML = '';
+
+        headings.forEach((heading, index) => {
+          const id = `heading-${index}`;
+          heading.id = id;
+
+          const level = parseInt(heading.tagName[1]);
+          const text = heading.textContent || '';
+          const levelClass = `toc-h${level}`;
+
+          tocHTML += `<a href="#${id}" class="toc-item ${levelClass}">${text}</a>`;
+        });
+
+        tocList.innerHTML = tocHTML;
+
+        // 点击切换目录显示/隐藏
+        tocToggle.addEventListener('click', () => {
+          tocList.classList.toggle('hidden');
+          tocArrow.classList.toggle('rotate-180');
+        });
+
+        // 点击目录项后自动折叠
+        tocList.querySelectorAll('.toc-item').forEach(item => {
+          item.addEventListener('click', () => {
+            tocList.classList.add('hidden');
+            tocArrow.classList.remove('rotate-180');
+          });
+        });
+      }
+      return;
+    }
+
+    // 桌面端处理
+    if (!tocContainer) return;
+
     if (headings.length === 0) {
       tocContainer.classList.add('hidden');
       return;
     }
 
     tocContainer.classList.remove('hidden');
-    
+
     let tocHTML = '';
 
     headings.forEach((heading, index) => {
       const id = `heading-${index}`;
       heading.id = id;
-      
-      const level = parseInt(heading.tagName[1]); // 获取 2, 3, 4
+
+      const level = parseInt(heading.tagName[1]);
       const text = heading.textContent || '';
-      
-      // 添加样式类
       const levelClass = `toc-h${level}`;
-      
+
       tocHTML += `<a href="#${id}" class="toc-item ${levelClass}">${text}</a>`;
     });
-    
+
     tocList.innerHTML = tocHTML;
 
     // 滚动高亮当前标题
