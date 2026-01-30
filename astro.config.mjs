@@ -6,7 +6,7 @@ import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://wikiflow.pages.dev',
+  site: 'https://utlium.com',
   integrations: [mdx(), sitemap()],
   vite: {
     plugins: [tailwindcss()]
