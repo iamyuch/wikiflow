@@ -278,12 +278,15 @@ const { title, description, keywords } = Astro.props;
     display: block;
     color: #666;
     text-decoration: none;
-    padding: 0.35rem 0;
+    padding: 0.5em 0;
     transition: color 0.2s ease;
-    line-height: 1.5;
+    line-height: 1.6;
     word-wrap: break-word;
     word-break: break-word;
     overflow-wrap: break-word;
+    white-space: normal;
+    width: 100%;
+    box-sizing: border-box;
   }
 
   #mobile-toc-list .toc-item:hover {
@@ -341,11 +344,20 @@ const { title, description, keywords } = Astro.props;
 
     /* 移动端目录列表样式 - 覆盖全局 flex 布局 */
     #mobile-toc-list {
-      display: block;
+      display: block !important;
     }
 
     #mobile-toc-list.hidden {
-      display: none;
+      display: none !important;
+    }
+
+    /* 移动端目录项确保换行 */
+    #mobile-toc-list .toc-item {
+      display: block !important;
+      white-space: normal !important;
+      width: 100% !important;
+      overflow-wrap: break-word !important;
+      word-break: break-word !important;
     }
 
     /* 移动端目录层级缩进 */
