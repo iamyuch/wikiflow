@@ -3,7 +3,7 @@ import { constants } from 'node:fs';
 import path from 'node:path';
 
 const distDir = path.join(process.cwd(), 'dist');
-const source = path.join(distDir, 'sitemap-index.xml');
+const source = path.join(distDir, 'sitemap-0.xml');
 const destination = path.join(distDir, 'sitemap.xml');
 
 try {
