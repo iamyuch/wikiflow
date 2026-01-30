@@ -231,7 +231,7 @@ const { title, description, keywords } = Astro.props;
     flex-direction: column;
   }
 
-  #toc-list .toc-item {
+  #desktop-toc-list .toc-item {
     display: block;
     color: #666;
     text-decoration: none;
@@ -243,12 +243,12 @@ const { title, description, keywords } = Astro.props;
     overflow-wrap: break-word;
   }
 
-  #toc-list .toc-item:hover {
+  #desktop-toc-list .toc-item:hover {
     color: #0000EE;
     text-decoration: underline;
   }
 
-  #toc-list .toc-item.active {
+  #desktop-toc-list .toc-item.active {
     color: #0000EE;
     font-weight: 600;
   }
@@ -274,7 +274,7 @@ const { title, description, keywords } = Astro.props;
   }
 
   /* 移动端可折叠目录样式 */
-  #toc-list .toc-item {
+  #mobile-toc-list .toc-item {
     display: block;
     color: #666;
     text-decoration: none;
@@ -286,12 +286,12 @@ const { title, description, keywords } = Astro.props;
     overflow-wrap: break-word;
   }
 
-  #toc-list .toc-item:hover {
+  #mobile-toc-list .toc-item:hover {
     color: #0000EE;
     text-decoration: underline;
   }
 
-  #toc-list .toc-item.active {
+  #mobile-toc-list .toc-item.active {
     color: #0000EE;
     font-weight: 600;
   }
@@ -340,30 +340,30 @@ const { title, description, keywords } = Astro.props;
     }
 
     /* 移动端目录列表样式 - 覆盖全局 flex 布局 */
-    #toc-list {
+    #mobile-toc-list {
       display: block;
     }
 
-    #toc-list.hidden {
+    #mobile-toc-list.hidden {
       display: none;
     }
 
     /* 移动端目录层级缩进 */
-    #toc-list .toc-h2 {
+    #mobile-toc-list .toc-h2 {
       padding-left: 0;
       font-weight: 600;
       margin-top: 0.5em;
     }
 
-    #toc-list .toc-h2:first-child {
+    #mobile-toc-list .toc-h2:first-child {
       margin-top: 0;
     }
 
-    #toc-list .toc-h3 {
+    #mobile-toc-list .toc-h3 {
       padding-left: 1em;
     }
 
-    #toc-list .toc-h4 {
+    #mobile-toc-list .toc-h4 {
       padding-left: 2em;
       font-size: 0.95em;
     }
