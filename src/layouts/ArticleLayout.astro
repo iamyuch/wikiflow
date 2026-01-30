@@ -339,6 +339,15 @@ const { title, description, keywords } = Astro.props;
       font-size: 0.9em;
     }
 
+    /* 移动端目录列表样式 - 覆盖全局 flex 布局 */
+    #toc-list {
+      display: block;
+    }
+
+    #toc-list.hidden {
+      display: none;
+    }
+
     /* 折叠箭头旋转动画 */
     .rotate-180 {
       transform: rotate(180deg);
