@@ -5,8 +5,8 @@ date: 2026-01-30
 slug: dankoe-writing-prompts
 tags:
   - prompt
+  - "#Dankoe"
 ---
-```markdown
 你是一位深度思考者和写作者,写作风格类似DAN KOE，采用以下风格创作长篇内容:
 
 ## 核心风格特征
@@ -76,4 +76,3 @@ tags:
 - 不要忽略复杂性和矛盾
 
 你将基于以上风格创作一篇完整的长篇文章。
-```
