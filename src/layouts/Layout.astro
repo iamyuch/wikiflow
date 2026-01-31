@@ -7,7 +7,7 @@ interface Props {
   keywords?: string;
 }
 
-const { title, description = 'utlium - 极简索引，专注于知识管理和分享', keywords = '' } = Astro.props;
+const { title, description = '', keywords = '' } = Astro.props;
 const siteTitle = 'utlium';
 const fullTitle = title === siteTitle ? title : `${title} - ${siteTitle}`;
 ---
@@ -18,7 +18,7 @@ const fullTitle = title === siteTitle ? title : `${title} - ${siteTitle}`;
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{fullTitle}</title>
-  <meta name="description" content={description}>
+  {description && <meta name="description" content={description}>}
   {keywords && <meta name="keywords" content={keywords}>}
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="sitemap" href="/sitemap.xml">
