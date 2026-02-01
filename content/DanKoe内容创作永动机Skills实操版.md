@@ -1,5 +1,5 @@
 ---
-title: Dan Koe内容创作永动机Skills 实操版
+title: Dan Koe内容创作永动机Skills实操版
 description:
 date: 2026-02-01
 slug: content-engine-skills-prompt
