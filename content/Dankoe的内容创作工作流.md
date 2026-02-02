@@ -5,6 +5,7 @@ date: 2026-01-31
 slug: dankoe-content-creation-distribution-workflow
 tags:
   - Dankoe
+  - 内容创作
 ---
 ## **DanKoe 的工作流程核心**
 1. **输入端**：用Gemini处理海量长内容（长视频/书），提取精华。
