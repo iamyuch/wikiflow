@@ -12,6 +12,42 @@ export interface Post {
   content: string;
 }
 
+function dedupePreserveOrder(values: string[]): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const value of values) {
+    if (seen.has(value)) continue;
+    seen.add(value);
+    result.push(value);
+  }
+  return result;
+}
+
+function splitTagString(value: string): string[] {
+  return value
+    .split(/[,\n\uFF0C;\uFF1B\u3001|]+/g)
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+function normalizeTags(value: unknown): string[] {
+  if (value == null) return [];
+
+  if (Array.isArray(value)) {
+    return dedupePreserveOrder(value.flatMap((item) => normalizeTags(item)));
+  }
+
+  if (typeof value === 'string') {
+    return dedupePreserveOrder(splitTagString(value));
+  }
+
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return [String(value)];
+  }
+
+  return [String(value).trim()].filter(Boolean);
+}
+
 export async function getAllPosts(): Promise<Post[]> {
   const contentDir = join(process.cwd(), 'content');
   const files = await readdir(contentDir);
@@ -22,11 +58,7 @@ export async function getAllPosts(): Promise<Post[]> {
       const filePath = join(contentDir, file);
       const fileContent = await readFile(filePath, 'utf-8');
       const { data, content } = matter(fileContent);
-      const tags = Array.isArray(data.tags)
-        ? data.tags.map((tag) => String(tag))
-        : data.tags
-          ? [String(data.tags)]
-          : [];
+      const tags = normalizeTags(data.tags);
 
       return {
         slug: data.slug || file.replace('.md', ''),
