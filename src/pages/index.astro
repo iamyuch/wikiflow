@@ -31,7 +31,7 @@ const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1).filter(p
                 [{post.date ? new Date(post.date).toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' }) : ''}]
               </span>
               <div class="flex-grow">
-                <a href={`/posts/${post.slug}`} class="text-[#0000EE] hover:text-[#FF0000] font-medium visited:text-[#551A8B] text-lg">
+                <a href={`/${post.slug}`} class="text-[#0000EE] hover:text-[#FF0000] font-medium visited:text-[#551A8B] text-lg">
                   {post.title}
                 </a>
               </div>

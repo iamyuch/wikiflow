@@ -1,6 +1,6 @@
 ---
-import ArticleLayout from '../../layouts/ArticleLayout.astro';
-import { getAllPosts, getPostBySlug } from '../../utils/posts';
+import ArticleLayout from '../layouts/ArticleLayout.astro';
+import { getAllPosts } from '../utils/posts';
 import { marked } from 'marked';
 
 export async function getStaticPaths() {
@@ -23,3 +23,4 @@ const htmlContent = marked(post.content);
 >
   <div set:html={htmlContent} />
 </ArticleLayout>
+
