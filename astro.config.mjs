@@ -7,7 +7,13 @@ import sitemap from '@astrojs/sitemap';
 // https://astro.build/config
 export default defineConfig({
   site: 'https://utlium.com',
-  integrations: [mdx(), sitemap()],
+  integrations: [
+    mdx(),
+    sitemap({
+      // Exclude legacy redirect pages like `/posts/<slug>/` from the sitemap.
+      filter: (page) => !page.includes('/posts/'),
+    }),
+  ],
   vite: {
     plugins: [tailwindcss()]
   }
