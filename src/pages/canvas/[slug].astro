@@ -1,0 +1,597 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { marked } from 'marked';
+import { getAllPosts } from '../../utils/posts';
+import { getAllCanvases, type CanvasSide } from '../../utils/canvas';
+
+export async function getStaticPaths() {
+  const canvases = await getAllCanvases();
+  return canvases.map((canvas) => ({
+    params: { slug: canvas.slug },
+  }));
+}
+
+const rawSlug = Astro.params.slug;
+const slug = typeof rawSlug === 'string'
+  ? (() => {
+      try {
+        return decodeURIComponent(rawSlug).trim();
+      } catch {
+        return rawSlug.trim();
+      }
+    })()
+  : '';
+
+const canvas = (await getAllCanvases()).find((item) => item.slug === slug);
+if (!canvas) {
+  throw new Error(`Canvas not found: ${slug}`);
+}
+
+const posts = await getAllPosts();
+const postBySourceFile = new Map(posts.map((post) => [post.sourceFile.toLowerCase(), post]));
+const postBySlug = new Map(posts.map((post) => [post.slug, post]));
+
+function normalizePath(value: string): string {
+  return value.replace(/\\/g, '/');
+}
+
+function getFileName(value: string): string {
+  const normalized = normalizePath(value);
+  const parts = normalized.split('/');
+  return parts[parts.length - 1] || value;
+}
+
+function stripExtension(fileName: string): string {
+  return fileName.replace(/\.[^/.]+$/u, '');
+}
+
+function resolvePostHref(nodeFile: string): { href?: string; title: string; subtitle?: string } {
+  const fileName = getFileName(nodeFile);
+  const lower = fileName.toLowerCase();
+
+  const byFile = postBySourceFile.get(lower);
+  if (byFile) {
+    return {
+      href: `/${encodeURIComponent(byFile.slug)}`,
+      title: byFile.title || stripExtension(fileName),
+      subtitle: stripExtension(fileName),
+    };
+  }
+
+  const fallbackSlug = stripExtension(fileName);
+  const bySlug = postBySlug.get(fallbackSlug);
+  if (bySlug) {
+    return {
+      href: `/${encodeURIComponent(bySlug.slug)}`,
+      title: bySlug.title || fallbackSlug,
+      subtitle: fallbackSlug,
+    };
+  }
+
+  return {
+    href: undefined,
+    title: stripExtension(fileName) || fileName || 'Untitled',
+    subtitle: fileName,
+  };
+}
+
+type NodeViewModel = {
+  id: string;
+  type: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  href?: string;
+  title?: string;
+  subtitle?: string;
+  html?: string;
+  label?: string;
+};
+
+const nodes = canvas.document.nodes ?? [];
+const edges = canvas.document.edges ?? [];
+
+let minX = Infinity;
+let minY = Infinity;
+let maxX = -Infinity;
+let maxY = -Infinity;
+
+for (const node of nodes) {
+  const x = typeof node.x === 'number' ? node.x : 0;
+  const y = typeof node.y === 'number' ? node.y : 0;
+  const width = typeof node.width === 'number' ? node.width : 0;
+  const height = typeof node.height === 'number' ? node.height : 0;
+
+  minX = Math.min(minX, x);
+  minY = Math.min(minY, y);
+  maxX = Math.max(maxX, x + width);
+  maxY = Math.max(maxY, y + height);
+}
+
+const hasNodes = Number.isFinite(minX) && Number.isFinite(minY) && Number.isFinite(maxX) && Number.isFinite(maxY);
+const padding = 180;
+const offsetX = hasNodes ? -minX + padding : padding;
+const offsetY = hasNodes ? -minY + padding : padding;
+const contentWidth = hasNodes ? maxX - minX : 0;
+const contentHeight = hasNodes ? maxY - minY : 0;
+const worldWidth = Math.max(800, contentWidth + padding * 2);
+const worldHeight = Math.max(600, contentHeight + padding * 2);
+const worldCenterX = hasNodes ? padding + contentWidth / 2 : worldWidth / 2;
+const worldCenterY = hasNodes ? padding + contentHeight / 2 : worldHeight / 2;
+
+const nodeById = new Map(nodes.map((node) => [node.id, node]));
+
+function toSide(value: unknown, fallback: CanvasSide): CanvasSide {
+  return value === 'left' || value === 'right' || value === 'top' || value === 'bottom' ? value : fallback;
+}
+
+function anchorFor(nodeId: string, side: CanvasSide): { x: number; y: number } | undefined {
+  const node = nodeById.get(nodeId);
+  if (!node) return undefined;
+
+  const x = (typeof node.x === 'number' ? node.x : 0) + offsetX;
+  const y = (typeof node.y === 'number' ? node.y : 0) + offsetY;
+  const width = typeof node.width === 'number' ? node.width : 0;
+  const height = typeof node.height === 'number' ? node.height : 0;
+
+  switch (side) {
+    case 'left':
+      return { x, y: y + height / 2 };
+    case 'right':
+      return { x: x + width, y: y + height / 2 };
+    case 'top':
+      return { x: x + width / 2, y };
+    case 'bottom':
+      return { x: x + width / 2, y: y + height };
+  }
+}
+
+function sideVector(side: CanvasSide): { x: number; y: number } {
+  switch (side) {
+    case 'left':
+      return { x: -1, y: 0 };
+    case 'right':
+      return { x: 1, y: 0 };
+    case 'top':
+      return { x: 0, y: -1 };
+    case 'bottom':
+      return { x: 0, y: 1 };
+  }
+}
+
+function bezierPath(
+  start: { x: number; y: number },
+  startSide: CanvasSide,
+  end: { x: number; y: number },
+  endSide: CanvasSide,
+): string {
+  const distance = Math.hypot(end.x - start.x, end.y - start.y);
+  const control = Math.min(180, Math.max(80, distance * 0.35));
+
+  const v1 = sideVector(startSide);
+  const v2 = sideVector(endSide);
+  const c1 = { x: start.x + v1.x * control, y: start.y + v1.y * control };
+  const c2 = { x: end.x + v2.x * control, y: end.y + v2.y * control };
+
+  return `M ${start.x} ${start.y} C ${c1.x} ${c1.y}, ${c2.x} ${c2.y}, ${end.x} ${end.y}`;
+}
+
+const edgePaths = edges
+  .map((edge) => {
+    const fromSide = toSide(edge.fromSide, 'right');
+    const endSide = toSide(edge.toSide, 'left');
+    const from = anchorFor(edge.fromNode, fromSide);
+    const to = anchorFor(edge.toNode, endSide);
+    if (!from || !to) return null;
+
+    return {
+      id: edge.id,
+      d: bezierPath(from, fromSide, to, endSide),
+    };
+  })
+  .filter(Boolean) as { id: string; d: string }[];
+
+const nodeModels: NodeViewModel[] = nodes.map((node) => {
+  const x = (typeof node.x === 'number' ? node.x : 0) + offsetX;
+  const y = (typeof node.y === 'number' ? node.y : 0) + offsetY;
+  const width = typeof node.width === 'number' ? node.width : 0;
+  const height = typeof node.height === 'number' ? node.height : 0;
+  const type = typeof node.type === 'string' ? node.type : 'unknown';
+
+  if (type === 'file' && typeof (node as any).file === 'string') {
+    const { href, title, subtitle } = resolvePostHref((node as any).file);
+    return { id: node.id, type, x, y, width, height, href, title, subtitle };
+  }
+
+  if (type === 'text' && typeof (node as any).text === 'string') {
+    const html = marked.parse((node as any).text);
+    return { id: node.id, type, x, y, width, height, html };
+  }
+
+  if (type === 'link' && typeof (node as any).url === 'string') {
+    const url = (node as any).url as string;
+    const text = typeof (node as any).text === 'string' ? ((node as any).text as string) : url;
+    return {
+      id: node.id,
+      type,
+      x,
+      y,
+      width,
+      height,
+      href: url,
+      title: text,
+      subtitle: url,
+    };
+  }
+
+  if (type === 'group') {
+    const label = typeof (node as any).label === 'string' ? ((node as any).label as string) : '';
+    return { id: node.id, type, x, y, width, height, label };
+  }
+
+  return { id: node.id, type, x, y, width, height };
+});
+---
+
+<Layout title={`Canvas: ${canvas.title}`} container="full">
+  <main>
+    <nav class="text-sm mb-6 text-gray-600 border-b border-gray-200 pb-4">
+      <a href="/" class="text-blue-600 hover:text-red-600 hover:underline">首页</a>
+      <span class="mx-2">/</span>
+      <a href="/canvas" class="text-blue-600 hover:text-red-600 hover:underline">Canvas</a>
+      <span class="mx-2">/</span>
+      <span class="text-black font-medium">{canvas.title}</span>
+    </nav>
+
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-bold">{canvas.title}</h1>
+        <div class="text-xs text-gray-500 mt-1">/canvas/{canvas.slug}</div>
+      </div>
+      <div class="text-xs text-gray-500">
+        拖拽空白区域平移 · 滚轮缩放 · 双击居中
+      </div>
+    </div>
+
+    <div
+      id="canvas-viewport"
+      class="canvas-viewport"
+      data-world-width={worldWidth}
+      data-world-height={worldHeight}
+      data-world-center-x={worldCenterX}
+      data-world-center-y={worldCenterY}
+    >
+      <div
+        id="canvas-inner"
+        class="canvas-inner"
+        style={`width: ${worldWidth}px; height: ${worldHeight}px;`}
+      >
+        <svg
+          class="canvas-edges"
+          width={worldWidth}
+          height={worldHeight}
+          viewBox={`0 0 ${worldWidth} ${worldHeight}`}
+          aria-hidden="true"
+        >
+          <defs>
+            <marker
+              id="canvas-arrow"
+              viewBox="0 0 10 10"
+              refX="9"
+              refY="5"
+              markerWidth="7"
+              markerHeight="7"
+              orient="auto-start-reverse"
+            >
+              <path d="M 0 0 L 10 5 L 0 10 z" fill="#9a9a9a" />
+            </marker>
+          </defs>
+          {edgePaths.map((edge) => (
+            <path
+              d={edge.d}
+              stroke="#a6a6a6"
+              stroke-width="2"
+              fill="none"
+              marker-end="url(#canvas-arrow)"
+            />
+          ))}
+        </svg>
+
+        {nodeModels.map((node) => (
+          node.type === 'group' ? (
+            <div
+              class="canvas-node canvas-node--group"
+              data-canvas-node
+              style={`left: ${node.x}px; top: ${node.y}px; width: ${node.width}px; height: ${node.height}px;`}
+              title={node.label || ''}
+            >
+              {node.label && <div class="canvas-node__group-label">{node.label}</div>}
+            </div>
+          ) : node.type === 'file' ? (
+            node.href ? (
+              <a
+                class="canvas-node canvas-node--file"
+                data-canvas-node
+                href={node.href}
+                style={`left: ${node.x}px; top: ${node.y}px; width: ${node.width}px; height: ${node.height}px;`}
+                title={node.subtitle || node.title || ''}
+              >
+                <div class="canvas-node__title">{node.title}</div>
+                {node.subtitle && <div class="canvas-node__subtitle">{node.subtitle}</div>}
+              </a>
+            ) : (
+              <div
+                class="canvas-node canvas-node--file canvas-node--disabled"
+                data-canvas-node
+                style={`left: ${node.x}px; top: ${node.y}px; width: ${node.width}px; height: ${node.height}px;`}
+                title={node.subtitle || node.title || ''}
+              >
+                <div class="canvas-node__title">{node.title}</div>
+                {node.subtitle && <div class="canvas-node__subtitle">{node.subtitle}</div>}
+              </div>
+            )
+          ) : node.type === 'link' && node.href ? (
+            <a
+              class="canvas-node canvas-node--link"
+              data-canvas-node
+              href={node.href}
+              style={`left: ${node.x}px; top: ${node.y}px; width: ${node.width}px; height: ${node.height}px;`}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={node.subtitle || node.title || ''}
+            >
+              <div class="canvas-node__title">{node.title}</div>
+              {node.subtitle && <div class="canvas-node__subtitle">{node.subtitle}</div>}
+            </a>
+          ) : node.type === 'text' && typeof node.html === 'string' ? (
+            <div
+              class="canvas-node canvas-node--text"
+              data-canvas-node
+              style={`left: ${node.x}px; top: ${node.y}px; width: ${node.width}px; height: ${node.height}px;`}
+            >
+              <div class="canvas-markdown" set:html={node.html} />
+            </div>
+          ) : (
+            <div
+              class="canvas-node canvas-node--unknown"
+              data-canvas-node
+              style={`left: ${node.x}px; top: ${node.y}px; width: ${node.width}px; height: ${node.height}px;`}
+            >
+              <div class="canvas-node__title">{node.type}</div>
+            </div>
+          )
+        ))}
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  const viewport = document.getElementById('canvas-viewport') as HTMLDivElement | null;
+  const inner = document.getElementById('canvas-inner') as HTMLDivElement | null;
+
+  if (viewport && inner) {
+    const worldWidth = Number(viewport.dataset.worldWidth || 0);
+    const worldHeight = Number(viewport.dataset.worldHeight || 0);
+    const worldCenterX = Number(viewport.dataset.worldCenterX || worldWidth / 2);
+    const worldCenterY = Number(viewport.dataset.worldCenterY || worldHeight / 2);
+
+    const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value));
+
+    let scale = 1;
+    let tx = 0;
+    let ty = 0;
+
+    const applyTransform = () => {
+      inner.style.transform = `translate(${tx}px, ${ty}px) scale(${scale})`;
+    };
+
+    const fitToViewport = () => {
+      const rect = viewport.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+
+      const fitScale = worldWidth && worldHeight
+        ? Math.min(rect.width / worldWidth, rect.height / worldHeight) * 0.95
+        : 1;
+      scale = clamp(fitScale || 1, 0.2, 1.6);
+      tx = rect.width / 2 - worldCenterX * scale;
+      ty = rect.height / 2 - worldCenterY * scale;
+      applyTransform();
+    };
+
+    fitToViewport();
+    window.addEventListener('resize', fitToViewport);
+
+    let panning = false;
+    let startX = 0;
+    let startY = 0;
+    let startTx = 0;
+    let startTy = 0;
+
+    viewport.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0) return;
+      const target = event.target as HTMLElement | null;
+      if (target?.closest('[data-canvas-node]')) return;
+
+      panning = true;
+      startX = event.clientX;
+      startY = event.clientY;
+      startTx = tx;
+      startTy = ty;
+      viewport.setPointerCapture(event.pointerId);
+    });
+
+    viewport.addEventListener('pointermove', (event) => {
+      if (!panning) return;
+      tx = startTx + (event.clientX - startX);
+      ty = startTy + (event.clientY - startY);
+      applyTransform();
+    });
+
+    const endPan = (event: PointerEvent) => {
+      if (!panning) return;
+      panning = false;
+      try {
+        viewport.releasePointerCapture(event.pointerId);
+      } catch {
+        // ignore
+      }
+    };
+
+    viewport.addEventListener('pointerup', endPan);
+    viewport.addEventListener('pointercancel', endPan);
+
+    viewport.addEventListener(
+      'wheel',
+      (event) => {
+        event.preventDefault();
+
+        const rect = viewport.getBoundingClientRect();
+        const mx = event.clientX - rect.left;
+        const my = event.clientY - rect.top;
+
+        const worldX = (mx - tx) / scale;
+        const worldY = (my - ty) / scale;
+
+        const zoomFactor = Math.pow(1.0015, -event.deltaY);
+        const nextScale = clamp(scale * zoomFactor, 0.2, 3);
+        if (nextScale === scale) return;
+
+        scale = nextScale;
+        tx = mx - worldX * scale;
+        ty = my - worldY * scale;
+        applyTransform();
+      },
+      { passive: false }
+    );
+
+    viewport.addEventListener('dblclick', () => {
+      fitToViewport();
+    });
+  }
+</script>
+
+<style>
+  .canvas-viewport {
+    position: relative;
+    height: min(76vh, 900px);
+    min-height: 520px;
+    border: 1px solid #d1d5db;
+    background-color: #fbfbfb;
+    overflow: hidden;
+    touch-action: none;
+    user-select: none;
+    --grid-color: rgba(0, 0, 0, 0.06);
+    background-image:
+      linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .canvas-inner {
+    position: relative;
+    transform-origin: 0 0;
+  }
+
+  .canvas-edges {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .canvas-node {
+    position: absolute;
+    z-index: 1;
+    display: block;
+    border: 1px solid #c7c7c7;
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 10px 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
+  }
+
+  .canvas-node--file,
+  .canvas-node--link {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .canvas-node--file:hover,
+  .canvas-node--link:hover {
+    border-color: #111827;
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.12);
+  }
+
+  .canvas-node--disabled,
+  .canvas-node--disabled:hover {
+    cursor: default;
+    border-color: #c7c7c7;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08);
+  }
+
+  .canvas-node--file:focus-visible,
+  .canvas-node--link:focus-visible {
+    outline: 2px solid #111827;
+    outline-offset: 2px;
+  }
+
+  .canvas-node__title {
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 1.35;
+    color: #111827;
+    margin-bottom: 4px;
+    word-break: break-word;
+  }
+
+  .canvas-node__subtitle {
+    font-size: 11px;
+    line-height: 1.2;
+    color: #6b7280;
+    word-break: break-word;
+  }
+
+  .canvas-node--text {
+    background: #fffdf7;
+  }
+
+  .canvas-markdown {
+    font-size: 13px;
+    line-height: 1.45;
+    color: #111827;
+  }
+
+  .canvas-markdown :global(h1),
+  .canvas-markdown :global(h2),
+  .canvas-markdown :global(h3) {
+    font-size: 14px;
+    margin: 0 0 6px;
+    border: 0;
+    padding: 0;
+  }
+
+  .canvas-markdown :global(p) {
+    margin: 0 0 6px;
+  }
+
+  .canvas-markdown :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .canvas-node--group {
+    background: rgba(255, 255, 255, 0.5);
+    border-style: dashed;
+    border-color: rgba(17, 24, 39, 0.25);
+    box-shadow: none;
+  }
+
+  .canvas-node__group-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: rgba(17, 24, 39, 0.72);
+  }
+</style>

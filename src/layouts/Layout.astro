@@ -5,78 +5,85 @@ interface Props {
   title: string;
   description?: string;
   keywords?: string;
+  container?: 'default' | 'wide' | 'full';
 }
 
-const { title, description = '', keywords = '' } = Astro.props;
+const { title, description = '', keywords = '', container = 'default' } = Astro.props;
 const siteTitle = 'utlium';
 const fullTitle = title === siteTitle ? title : `${title} - ${siteTitle}`;
+const containerMaxWidth = container === 'full'
+  ? 'max-w-none'
+  : container === 'wide'
+    ? 'max-w-screen-2xl'
+    : 'max-w-8xl';
 ---
 
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{fullTitle}</title>
-  {description && <meta name="description" content={description}>}
-  {keywords && <meta name="keywords" content={keywords}>}
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="sitemap" href="/sitemap.xml">
-  <meta name="theme-color" content="#ffffff">
-</head>
-<body class="bg-white text-black min-h-screen">
-  <div class="max-w-6xl mx-auto px-4 py-8 bg-white min-h-screen border-x border-gray-200 shadow-none">
-    <!-- 头部：Logo 和 搜索 -->
-    <header class="flex flex-col md:flex-row md:items-center justify-between border-b-2 border-black pb-6 mb-8 gap-6">
-      <div class="flex-shrink-0">
-        <h1 class="text-4xl font-bold tracking-tighter text-black font-sans">
-          <a href="/" class="no-underline hover:text-gray-600 text-black transition-colors">utlium</a>
-        </h1>
-      </div>
-      
-      <!-- 朴素的搜索框 -->
-      <div class="w-full md:w-auto flex-shrink-0">
-        <form id="search-form" class="flex gap-1">
-          <input 
-            type="text" 
-            id="search-input"
-            placeholder="搜索文章标题..." 
-            class="border border-gray-400 px-3 py-2 w-full md:w-64 text-sm rounded-none focus:outline-none focus:border-black focus:ring-1 focus:ring-black"
-          >
-          <button type="submit" class="bg-gray-100 border border-gray-400 px-4 py-2 text-sm text-black hover:bg-gray-200 active:bg-gray-300 rounded-none font-medium transition-colors">
-            搜索
-          </button>
-        </form>
-      </div>
-    </header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{fullTitle}</title>
+    {description && <meta name="description" content={description} />}
+    {keywords && <meta name="keywords" content={keywords} />}
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="sitemap" href="/sitemap.xml" />
+    <meta name="theme-color" content="#ffffff" />
+  </head>
+  <body class="bg-white text-black min-h-screen">
+    <div class={`${containerMaxWidth} mx-auto px-4 py-8 bg-white min-h-screen border-x border-gray-200 shadow-none`}>
+      <!-- 澶撮儴锛歀ogo 鍜?鎼滅储 -->
+      <header class="flex flex-col md:flex-row md:items-center justify-between border-b-2 border-black pb-6 mb-8 gap-6">
+        <div class="flex-shrink-0">
+          <h1 class="text-4xl font-bold tracking-tighter text-black font-sans">
+            <a href="/" class="no-underline hover:text-gray-600 text-black transition-colors">utlium</a>
+          </h1>
+        </div>
 
-    <slot />
+        <!-- 鏈寸礌鐨勬悳绱㈡ -->
+        <div class="w-full md:w-auto flex-shrink-0">
+          <form id="search-form" class="flex gap-1">
+            <input
+              type="text"
+              id="search-input"
+              placeholder="鎼滅储鏂囩珷鏍囬..."
+              class="border border-gray-400 px-3 py-2 w-full md:w-64 text-sm rounded-none focus:outline-none focus:border-black focus:ring-1 focus:ring-black"
+            />
+            <button
+              type="submit"
+              class="bg-gray-100 border border-gray-400 px-4 py-2 text-sm text-black hover:bg-gray-200 active:bg-gray-300 rounded-none font-medium transition-colors"
+            >
+              鎼滅储
+            </button>
+          </form>
+        </div>
+      </header>
 
+      <slot />
+    </div>
 
-  </div>
+    <script>
+      // 鎼滅储鍔熻兘
+      const searchForm = document.getElementById('search-form');
+      const searchInput = document.getElementById('search-input') as HTMLInputElement;
 
-  <script>
-    // 搜索功能
-    const searchForm = document.getElementById('search-form');
-    const searchInput = document.getElementById('search-input') as HTMLInputElement;
-
-    if (searchForm && searchInput) {
-      searchForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const query = searchInput.value.trim();
-        if (query) {
-          window.location.href = `/search?q=${encodeURIComponent(query)}`;
-        }
-      });
-
-      // 快捷键：Ctrl/Cmd + K 聚焦搜索框
-      document.addEventListener('keydown', (e) => {
-        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      if (searchForm && searchInput) {
+        searchForm.addEventListener('submit', (e) => {
           e.preventDefault();
-          searchInput.focus();
-        }
-      });
-    }
-  </script>
-</body>
+          const query = searchInput.value.trim();
+          if (query) {
+            window.location.href = `/search?q=${encodeURIComponent(query)}`;
+          }
+        });
+
+        // 蹇嵎閿細Ctrl/Cmd + K 鑱氱劍鎼滅储妗?
+        document.addEventListener('keydown', (e) => {
+          if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            e.preventDefault();
+            searchInput.focus();
+          }
+        });
+      }
+    </script>
+  </body>
 </html>
