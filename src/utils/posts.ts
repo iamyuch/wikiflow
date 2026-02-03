@@ -4,6 +4,7 @@ import matter from 'gray-matter';
 
 export interface Post {
   slug: string;
+  sourceFile: string;
   title: string;
   description: string;
   keywords: string;
@@ -62,6 +63,7 @@ export async function getAllPosts(): Promise<Post[]> {
 
       return {
         slug: data.slug || file.replace('.md', ''),
+        sourceFile: file,
         title: data.title || 'Untitled',
         description: data.description || '',
         keywords: data.keywords || '',
